@@ -1,0 +1,12 @@
+<h1>chat in ${thing.room._id}</h1>
+
+<div id="chat"></div>
+
+<form id="send-message" action="/api/robin/${thing.room._id}/message" method="POST">
+  <input type="text" name="message" required>
+  <input type="submit" value="send">
+  <span class="status error"></span>
+</form>
+
+<% from r2.lib import js %>
+${unsafe(js.use('robin'))}
