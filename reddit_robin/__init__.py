@@ -30,6 +30,18 @@ class Robin(Plugin):
         # ],
     }
 
+    def declare_queues(self, queues):
+        from r2.config.queues import MessageQueue
+
+        queues.declare({
+            "robin_presence_q": MessageQueue(),
+        })
+
+        queues.robin_presence_q << (
+            "websocket.connect",
+            "websocket.disconnect",
+        )
+
     def add_routes(self, mc):
         mc("/robin", controller="robin", action="home",
            conditions={"function": not_in_sr})

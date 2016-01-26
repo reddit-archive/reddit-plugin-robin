@@ -1,3 +1,5 @@
+import posixpath
+
 from pylons import tmpl_context as c
 
 from r2.controllers import add_controller
@@ -29,7 +31,8 @@ class RobinController(RedditController):
         room=VRobinRoom("room_id"),
     )
     def GET_chat(self, room):
-        websocket_url = websockets.make_url("/robin/" + room._id, max_age=3600)
+        path = posixpath.join("/robin", str(room._id), c.user._id36)
+        websocket_url = websockets.make_url(path, max_age=3600)
 
         return RobinPage(
             title="chat in %s" % room._id,
