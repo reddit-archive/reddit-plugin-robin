@@ -1,7 +1,90 @@
-#chat {
-    width: 500px;
-    height: 300px;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    border: 1px solid black;
+@color-semi-black: #222222;
+@color-grey: #A5A4A4;
+@color-pale-grey: #EFEFED;
+@color-white: #FFFFFF;
+
+@color-robin--self: #0079D3;
+
+body {
+    background-color: @color-pale-grey;
+}
+
+.content {
+    margin: 0 auto;
+    background-color: @color-white;
+    border-width: 0 1px 1px;
+    border-style: solid;
+    border-color: darken(@color-pale-grey, 5%);
+}
+
+.footer-parent {
+    padding-top: 0;
+}
+
+
+.robin-chat {
+    .robin-chat--header {
+        h1 {
+            margin: 0;
+            line-height: 20px;
+        }
+
+        padding: 15px 20px;
+        border-bottom: 1px solid darken(@color-pale-grey, 5%);
+    }
+    .robin-chat--room-name {
+        color: @color-grey;
+    }
+
+    .robin-chat--window {
+        height: 300px;
+        overflow-x: hidden;
+        overflow-y: scroll;
+    }
+
+    .robin-chat--message-list {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding-top: 7px;
+        padding-bottom: 8px;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+    .robin-chat--input {
+        padding: 10px;
+
+        input[type=submit] {
+            display: none;
+        }
+    }
+}
+
+.robin-message {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 15px;
+    padding: 2px 5px 3px;
+    color: @color-semi-black;
+
+    .robin-message--from {
+        font-weight: bold;
+    }
+
+    .robin-message--timestamp {
+        color: @color-grey;
+        font-size: 11px;
+    }
+
+    &.robin-message--user-class--system {
+        font-style: italic;
+        color: @color-grey;
+    }
+
+    &.robin-message--user-class--self {
+        .robin-message--from {
+            color: @color-robin--self;
+        }
+    }
 }

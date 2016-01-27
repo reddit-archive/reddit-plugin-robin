@@ -1,10 +1,12 @@
 !function(r, $, _) {
   'use strict';
 
-  var $chat = $('#chat');
+  var $chat = $('#robinChatList');
+  var $scroll = $('#robinScrollContainer');
+
   function addChatMessage(message) {
-    var scrollOffset = ($chat.prop('scrollHeight') - $chat.scrollTop());
-    var wasScrolledDown = (scrollOffset === $chat.height());
+    var scrollOffset = ($scroll.prop('scrollHeight') - $scroll.scrollTop());
+    var wasScrolledDown = (scrollOffset === $scroll.height());
 
     console.log('scroll state = ' + wasScrolledDown);
 
@@ -18,7 +20,7 @@
     $chat.append(el);
 
     if (wasScrolledDown) {
-      chat.scrollTop = chat.scrollHeight;
+      robinScrollContainer.scrollTop = robinScrollContainer.scrollHeight;
     }
   }
 

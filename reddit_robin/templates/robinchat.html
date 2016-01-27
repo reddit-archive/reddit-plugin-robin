@@ -1,9 +1,21 @@
-<h1>chat in ${thing.room._id}</h1>
+<div class="robin-chat">
+    <header class="robin-chat--header">
+        <h1>chat in &#32;<span class="robin-chat--room-name">${thing.room._id}</span></h1>
+    </header>
 
-<div id="chat"></div>
+    <div id="robinScrollContainer" class="robin-chat--window">
+        <div id="robinChatList" class="robin-chat--message-list"></div>
+    </div>
 
-<form id="send-message" action="/api/robin/${thing.room._id}/message" method="POST">
-  <input type="text" name="message" required>
-  <input type="submit" value="send">
-  <span class="status error"></span>
-</form>
+    <div class="robin-chat--input">
+        <form id="send-message" action="/api/robin/${thing.room._id}/message" method="POST">
+            <input type="text"
+                    class="c-form-control"
+                    name="message"
+                    autocomplete="off"
+                    required>
+            <input type="submit" value="send">
+            <span class="status error" style="display:none"></span>
+        </form>
+    </div>
+</div>
