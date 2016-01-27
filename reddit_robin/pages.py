@@ -18,6 +18,10 @@ class RobinPage(Reddit):
         return []
 
 
+class RobinChatPage(RobinPage):
+    pass
+
+
 class RobinHome(Templated):
     pass
 

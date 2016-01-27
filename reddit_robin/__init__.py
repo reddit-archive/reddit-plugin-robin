@@ -2,7 +2,10 @@ from pylons.i18n import N_
 
 from r2.config.routing import not_in_sr
 from r2.lib.configparse import ConfigValue
-from r2.lib.js import LocalizedModule
+from r2.lib.js import (
+    LocalizedModule,
+    TemplateFileSource,
+)
 from r2.lib.plugin import Plugin
 
 
@@ -12,6 +15,7 @@ class Robin(Plugin):
     js = {
         "robin": LocalizedModule("robin.js",
             "websocket.js",
+            TemplateFileSource("robin/robinmessage.html"),
             "robin/init.js",
         ),
     }

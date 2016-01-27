@@ -15,7 +15,12 @@ from r2.lib.validator import (
 )
 
 from .validators import VRobinRoom
-from .pages import RobinPage, RobinHome, RobinChat
+from .pages import (
+    RobinPage,
+    RobinChatPage,
+    RobinHome,
+    RobinChat,
+)
 
 
 @add_controller
@@ -34,7 +39,7 @@ class RobinController(RedditController):
         path = posixpath.join("/robin", str(room._id), c.user._id36)
         websocket_url = websockets.make_url(path, max_age=3600)
 
-        return RobinPage(
+        return RobinChatPage(
             title="chat in %s" % room._id,
             content=RobinChat(room=room),
             extra_js_config={

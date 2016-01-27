@@ -8,34 +8,53 @@
 
     console.log('scroll state = ' + wasScrolledDown);
 
-    var $el = $('<p>').text(message);
-    $chat.append($el);
+    var date = new Date();
+    var time = date.toLocaleTimeString ? date.toLocaleTimeString() : date.toTimeString();
+
+    message.isoDate = date.toISOString();
+    message.timestamp = time;
+
+    var el = r.templates.make('robin/robinmessage', message);
+    $chat.append(el);
 
     if (wasScrolledDown) {
       chat.scrollTop = chat.scrollHeight;
     }
   }
 
+  function addSystemMessage(body) {
+    return addChatMessage({
+      from: 'robinbot',
+      userClass: 'system',
+      body: body,
+    });
+  }
+
   var websocket = new r.WebSocket(r.config.robin_websocket_url);
   websocket.on({
     'connecting': function() {
-      addChatMessage('connecting');
+      addSystemMessage('connecting');
     },
 
     'connected': function() {
-      addChatMessage('connected!');
+      addSystemMessage('connected!');
     },
 
     'disconnected': function() {
-      addChatMessage('disconnected :(');
+      addSystemMessage('disconnected :(');
     },
 
     'reconnecting': function(delay) {
-      addChatMessage('reconnecting in ' + delay + ' seconds...');
+      addSystemMessage('reconnecting in ' + delay + ' seconds...');
     },
 
     'message:chat': function(message) {
-      addChatMessage('<' + message.from + '> ' + message.body);
+      if (message.from === r.config.logged) {
+        message.userClass = 'self';
+      } else {
+        message.userClass = 'user';
+      }
+      addChatMessage(message);
     },
   });
   websocket.start();
