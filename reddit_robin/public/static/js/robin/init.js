@@ -58,6 +58,14 @@
       }
       addChatMessage(message);
     },
+
+    'message:join': function(message) {
+      addSystemMessage(message.user + ' has joined the room');
+    },
+
+    'message:part': function(message) {
+      addSystemMessage(message.user + ' has left the room');
+    },
   });
   websocket.start();
 
