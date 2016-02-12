@@ -44,6 +44,7 @@ class Robin(Plugin):
 
         queues.declare({
             "robin_presence_q": MessageQueue(),
+            "robin_waitinglist_q": MessageQueue(bind_to_self=True),
         })
 
         queues.robin_presence_q << (
@@ -59,6 +60,10 @@ class Robin(Plugin):
         mc("/robin/:room_id", controller="robin", action="chat",
             conditions={"function": not_in_sr})
         mc("/api/robin/:room_id/:action", controller="robin",
+            conditions={"function": not_in_sr})
+        mc("/api/join_room", controller="robin", action="join_room",
+            conditions={"function": not_in_sr})
+        mc("/api/room_assignment", controller="robin", action="room_assignment",
             conditions={"function": not_in_sr})
 
     def load_controllers(self):

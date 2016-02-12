@@ -7,6 +7,7 @@ from r2.controllers.reddit_base import RedditController
 from r2.lib import websockets
 from r2.lib.errors import errors
 from r2.lib.validator import (
+    json_validate,
     validate,
     validatedForm,
     VBoolean,
@@ -30,12 +31,14 @@ from .matchmaker import add_to_waitinglist
 
 @add_controller
 class RobinController(RedditController):
+    @validate(
+        VUser(),
+    )
     def GET_home(self):
-        if c.user_is_loggedin:
-            room = RobinRoom.get_room_for_user(c.user)
-            if room:
-                self.redirect("/robin/{room_id}".format(room_id=room._id))
-                return
+        room = RobinRoom.get_room_for_user(c.user)
+        if room:
+            self.redirect("/robin/{room_id}".format(room_id=room._id))
+            return
 
         return RobinPage(
             title="robin",
@@ -121,3 +124,22 @@ class RobinController(RedditController):
                 "confirmed": confirmed,
             },
         )
+
+    @validatedForm(
+        VUser(),
+        VModhash(),
+    )
+    def POST_join_room(self, form, jquery):
+        room = RobinRoom.get_room_for_user(c.user)
+        if room:
+            # user is already in a room, they should get redirected by the
+            # frontend after polling /api/room_assignment.json
+            return
+
+        add_to_waitinglist(c.user)
+
+    @json_validate(VUser())
+    def GET_room_assignment(self, responder):
+        room = RobinRoom.get_room_for_user(c.user)
+        if room:
+            return {"roomId": room._id}
