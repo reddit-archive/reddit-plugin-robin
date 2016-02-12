@@ -30,8 +30,7 @@ class RobinRoom(tdb_cassandra.Thing):
 
     def add_participants(self, users):
         ParticipantVoteByRoom.add_participants(self, users)
-        for user in users:
-            RoomsByParticipant.add_room(user, self)
+        RoomsByParticipant.add_users_to_room(users, self)
 
     def is_participant(self, user):
         vote = ParticipantVoteByRoom.get_vote(self, user)
@@ -237,10 +236,12 @@ class RoomsByParticipant(tdb_cassandra.View):
         return user._id36
 
     @classmethod
-    def add_room(cls, user, room):
-        rowkey = cls._rowkey(user)
+    def add_users_to_room(cls, users, room):
         column = {uuid1(): room._id}
-        cls._set_values(rowkey, column)
+        with cls._cf.batch() as b:
+            for user in users:
+                rowkey = cls._rowkey(user)
+                b.insert(rowkey, column)
 
     @classmethod
     def get_room_id(cls, user):
