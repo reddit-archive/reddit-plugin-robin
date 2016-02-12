@@ -1,5 +1,9 @@
+from pylons import tmpl_context as c
+
 from r2.lib.pages import Reddit
 from r2.lib.wrapped import Templated
+
+from reddit_robin.models import RobinRoom
 
 
 class RobinPage(Reddit):
@@ -23,8 +27,12 @@ class RobinChatPage(RobinPage):
 
 
 class RobinHome(Templated):
-    pass
-
+    def __init__(self):
+        all_rooms = list(RobinRoom.generate_all_rooms())
+        self.all_rooms = [room._id for room in all_rooms]
+        self.user_rooms = [
+            room._id for room in all_rooms if room.is_participant(c.user)]
+        Templated.__init__(self)
 
 class RobinChat(Templated):
     pass

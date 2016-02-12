@@ -21,11 +21,17 @@ from .pages import (
     RobinHome,
     RobinChat,
 )
+from .models import RobinRoom
 
 
 @add_controller
 class RobinController(RedditController):
     def GET_home(self):
+        if c.user_is_loggedin:
+            room = RobinRoom.get_room_for_user(c.user)
+            if room:
+                self.redirect("/robin/{room_id}".format(room_id=room._id))
+
         return RobinPage(
             title="robin",
             content=RobinHome(),

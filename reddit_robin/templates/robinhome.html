@@ -1,7 +1,11 @@
 <h1>robin</h1>
 
 <ul>
-  <li><a href="/robin/example_a">a chat</a></li>
-  <li><a href="/robin/example_b">b chat</a></li>
-  <li><a href="/robin/example_c">c chat</a></li>
+  %for room_name in thing.all_rooms:
+    %if room_name in thing.user_rooms:
+      <li><a href="/robin/${room_name}">${room_name}</a></li>
+    %else:
+      <li>${room_name}</li>
+    %endif
+  %endfor
 </ul>
