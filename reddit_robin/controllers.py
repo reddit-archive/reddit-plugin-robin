@@ -9,8 +9,10 @@ from r2.lib.errors import errors
 from r2.lib.validator import (
     validate,
     validatedForm,
+    VBoolean,
     VLength,
     VModhash,
+    VOneOf,
     VUser,
 )
 
@@ -73,5 +75,33 @@ class RobinController(RedditController):
             payload={
                 "from": c.user.name,
                 "body": message,
+            },
+        )
+
+    @validatedForm(
+        VUser(),
+        VModhash(),
+        room=VRobinRoom("room_id"),
+        vote=VOneOf("vote", ("INCREASE", "CONTINUE", "ABANDON")),
+        confirmed=VBoolean("confirmed"),
+    )
+    def POST_vote(self, form, jquery, room, vote, confirmed):
+        if not vote:
+            # TODO: error return?
+            return
+
+        try:
+            room.change_vote(c.user, vote, confirmed)
+        except ValueError:
+            # TODO: error return?
+            return
+
+        websockets.send_broadcast(
+            namespace="/robin/" + room._id,
+            type="vote",
+            payload={
+                "from": c.user.name,
+                "vote": vote,
+                "confirmed": confirmed,
             },
         )
