@@ -18,12 +18,14 @@ from r2.lib.validator import (
 
 from .validators import VRobinRoom
 from .pages import (
+    RobinAll,
     RobinPage,
     RobinChatPage,
     RobinHome,
     RobinChat,
 )
 from .models import RobinRoom
+from .matchmaker import add_to_waitinglist
 
 
 @add_controller
@@ -33,11 +35,25 @@ class RobinController(RedditController):
             room = RobinRoom.get_room_for_user(c.user)
             if room:
                 self.redirect("/robin/{room_id}".format(room_id=room._id))
+                return
 
         return RobinPage(
             title="robin",
             content=RobinHome(),
         ).render()
+
+    @validate(
+        VUser(),
+    )
+    def GET_all(self):
+        #if not c.user_is_admin:
+        #    return self.abort403()
+
+        return RobinPage(
+            title="robin",
+            content=RobinAll(),
+        ).render()
+
 
     @validate(
         VUser(),

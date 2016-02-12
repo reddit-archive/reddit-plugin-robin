@@ -27,6 +27,10 @@ class RobinChatPage(RobinPage):
 
 
 class RobinHome(Templated):
+    pass
+
+
+class RobinAll(Templated):
     def __init__(self):
         all_rooms = list(RobinRoom.generate_all_rooms())
         self.all_rooms = [room._id for room in all_rooms]
