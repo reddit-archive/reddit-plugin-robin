@@ -121,6 +121,14 @@ class RoomVote(object):
         vote = cls(name, confirmed)
         return vote
 
+    def __repr__(self):
+        cls_name = self.__class__.__name__
+        return "<{cls} {name} ({confirmed})>".format(
+            cls=cls_name,
+            name=self.name,
+            confirmed="confirmed" if self.confirmed else "unconfirmed",
+        )
+
 
 class ParticipantVoteByRoom(tdb_cassandra.View):
     """Store the list of users and their votes. This is the authoritative list
