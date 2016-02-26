@@ -34,5 +34,6 @@ class RobinHome(Templated):
             room._id for room in all_rooms if room.is_participant(c.user)]
         Templated.__init__(self)
 
+
 class RobinChat(Templated):
     pass

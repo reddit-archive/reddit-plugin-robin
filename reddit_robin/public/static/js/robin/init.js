@@ -1,80 +1,252 @@
 !function(r, $, _) {
   'use strict';
 
-  var $chat = $('#robinChatList');
-  var $scroll = $('#robinScrollContainer');
+  var models = r.robin.models;
+  var views = r.robin.views;
 
-  function addChatMessage(message) {
-    var scrollOffset = ($scroll.prop('scrollHeight') - $scroll.scrollTop());
-    var wasScrolledDown = (scrollOffset === $scroll.height());
+  var RobinChat = Backbone.View.extend({
+    websocketEvents: {
+      'connecting': function() {
+        this.addSystemMessage('connecting');
+      },
 
-    console.log('scroll state = ' + wasScrolledDown);
+      'connected': function() {
+        this.addSystemMessage('connected!');
+      },
 
-    var date = new Date();
-    var time = date.toLocaleTimeString ? date.toLocaleTimeString() : date.toTimeString();
+      'disconnected': function() {
+        this.addSystemMessage('disconnected :(');
+      },
 
-    message.isoDate = date.toISOString();
-    message.timestamp = time;
+      'reconnecting': function(delay) {
+        this.addSystemMessage('reconnecting in ' + delay + ' seconds...');
+      },
 
-    var el = r.templates.make('robin/robinmessage', message);
-    $chat.append(el);
+      'message:chat': function(message) {
+        this.addChatMessage(message.from, message.body);
+      },
 
-    if (wasScrolledDown) {
-      robinScrollContainer.scrollTop = robinScrollContainer.scrollHeight;
-    }
-  }
+      'message:vote': function(message) {
+        this.updateUserVote(message.from, message.vote, message.confirmed);
+      },
 
-  function addSystemMessage(body) {
-    return addChatMessage({
-      from: 'robinbot',
-      userClass: 'system',
-      body: body,
-    });
-  }
+      'message:join': function(message) {
+        this.addSystemMessage(message.user + ' has joined the room');
+      },
 
-  var websocket = new r.WebSocket(r.config.robin_websocket_url);
-  websocket.on({
-    'connecting': function() {
-      addSystemMessage('connecting');
+      'message:part': function(message) {
+        this.addSystemMessage(message.user + ' has left the room');
+      },
     },
 
-    'connected': function() {
-      addSystemMessage('connected!');
+    roomEvents: {
+      'success:vote': function(room, data) {
+        if (data.confirmed) {
+          this.addSystemMessage('you have confirmed your vote of ' + data.vote);
+        } else {
+          this.addSystemMessage('you have voted: ' + data.vote);
+        }
+
+        this.currentUser.set(data);
+      },
+
+      'request:message': function() {
+        this.chatInput.disable();
+      },
+
+      'invalid:message error:message': function() {
+        // TODO handle error better than this
+        this.chatInput.clear();
+      },
+
+      'success:message': function() {
+        this.chatInput.clear();
+      },
     },
 
-    'disconnected': function() {
-      addSystemMessage('disconnected :(');
+    roomParticipantsEvents: {
+      add: function(user, userList) {
+        this.userListWidget.addUser(user);
+      },
     },
 
-    'reconnecting': function(delay) {
-      addSystemMessage('reconnecting in ' + delay + ' seconds...');
+    chatInputEvents: {
+      'chat:message': function(messageText) {
+        this.room.postMessage(messageText);
+      },
+
+      'chat:command': function(command, args) {
+        if (typeof this.chatCommands[command] !== 'function') {
+          args = [command]
+          command = 'unknown';
+        } else {
+          this.chatInput.clear();
+        }
+
+        this.chatCommands[command].apply(this, args);
+      },
     },
 
-    'message:chat': function(message) {
-      if (message.from === r.config.logged) {
-        message.userClass = 'self';
-      } else {
-        message.userClass = 'user';
+    voteWidgetEvents: {
+      'vote': function(vote) {
+        this.room.postVote(vote.toUpperCase());
+      },
+
+      'confirm': function() {
+        var vote = this.currentUser.get('vote');
+        this.room.postVote(vote, true);
+      },
+    },
+
+    chatCommands: {
+      'unknown': function(command) {
+        this.addSystemMessage('"/' + command + '" is not a command');
+      },
+
+      'vote': function(vote) {
+        if (!this.currentUser.canVote()) {
+          this.addSystemMessage('you have already confirmed your vote of ' + this.currentUser.get('vote'));
+        } else if (!vote) {
+          this.addSystemMessage('use: /vote [' + r.robin.VOTE_TYPES.join(',') + ']');
+        } else if (r.robin.VOTE_TYPES.indexOf(vote.toUpperCase()) < 0) {
+          this.addSystemMessage('that is not a valid vote type');
+        } else {
+          this.room.postVote(vote.toUpperCase());
+          this.voteWidget.setActiveVote(vote);
+        }
+      },
+
+      'confirm': function() {
+        var vote = this.currentUser.get('vote');
+        var confirmed = this.currentUser.get('confirmed');
+
+        if (this.currentUser.canConfirm()) {
+          this.room.postVote(vote, true);
+          this.voteWidget.setConfirmedState();
+        } else if (confirmed) {
+          this.addSystemMessage('you have already confirmed your vote of ' + vote);
+        } else {
+          this.addSystemMessage('you have not voted yet');
+        }
+      },
+    },
+
+    initialize: function(options) {
+      this.websocketEvents = this._autobind(this.websocketEvents);
+      this.chatCommands = this._autobind(this.chatCommands);
+
+      // initialize some models for managing state
+      this.room = new models.RobinRoom({
+        room_id: this.options.room_id,
+      });
+
+      this.systemUser = new models.RobinUser({
+        name: '[robin]',
+        userClass: 'system',
+      });
+
+      this.currentUser = new models.RobinUser({
+        name: this.options.logged_in_username,
+        userClass: 'self',
+      });
+
+      this.roomParticipants = new models.RobinRoomParticipants([this.currentUser]);
+
+      // initialize some child views 
+      this.chatInput = new views.RobinChatInput({
+        el: this.$el.find('#robinChatInput')[0],
+      });
+
+      this.chatWindow = new views.RobinChatWindow({
+        el: this.$el.find('#robinChatWindow')[0],
+      });
+      
+      this.voteWidget = new views.RobinVoteWidget({
+        el: this.$el.find('#robinVoteWidget')[0],
+      });
+
+      this.userListWidget = new views.RobinUserListWidget({
+        el: this.$el.find('#robinUserList')[0],
+      });
+
+      this.userListWidget.addUser(this.currentUser);
+
+      // wire up events
+      this._listenToEvents(this.room, this.roomEvents);
+      this._listenToEvents(this.roomParticipants, this.roomParticipantsEvents);
+      this._listenToEvents(this.chatInput, this.chatInputEvents);
+      this._listenToEvents(this.voteWidget, this.voteWidgetEvents);
+
+      // initialize websockets. should be last!
+      this.websocket = new r.WebSocket(options.websocket_url);
+      this.websocket.on(this.websocketEvents);
+      this.websocket.start();
+    },
+
+    _listenToEvents: function(other, eventMap) {
+      for (var key in eventMap) {
+        this.listenTo(other, key, eventMap[key]);
       }
-      addChatMessage(message);
     },
 
-    'message:join': function(message) {
-      addSystemMessage(message.user + ' has joined the room');
+    _autobind: function(hash) {
+      var bound = {}
+      for (var key in hash) {
+        bound[key] = hash[key].bind(this);
+      }
+      return bound;
     },
 
-    'message:part': function(message) {
-      addSystemMessage(message.user + ' has left the room');
+    addChatMessage: function(userName, messageText) {
+      var user = this.roomParticipants.get(userName);
+      if (!user) {
+        user = new models.RobinUser({
+          name: userName,
+        });
+        this.roomParticipants.add(user);
+      }
+
+      var message = new models.RobinMessage({
+        message: messageText,
+      });
+
+      this.chatWindow.addMessage(user, message);
+    },
+
+    addSystemMessage: function(messageText) {
+      var message = new models.RobinMessage({
+        message: messageText,
+      });
+
+      this.chatWindow.addMessage(this.systemUser, message);
+    },
+
+    updateUserVote: function(userName, vote, confirmed) {
+      var user = this.roomParticipants.get(userName);
+      
+      if (!user) {
+        user = new models.RobinUser({
+          name: userName,
+          vote: vote,
+          confirmed: confirmed,
+        });
+        this.roomParticipants.add(user);
+      }
+
+      if (confirmed) {
+        this.addSystemMessage(userName + ' confirmed their vote to ' + vote);
+      } else {
+        this.addSystemMessage(userName + ' voted to ' + vote);
+      }
     },
   });
-  websocket.start();
 
-  $('#send-message').submit(function (ev) {
-    ev.preventDefault();
-
-    var $form = $(this);
-    post_pseudo_form('#send-message', 'robin/' + r.config.robin_room_id + '/message');
-
-    $form.find('[type=text]').val('');
+  $(function() {
+    new RobinChat({
+      el: document.getElementById('robinChat'),
+      room_id: r.config.robin_room_id,
+      websocket_url: r.config.robin_websocket_url,
+      logged_in_username: r.config.logged,
+    });
   });
 }(r, jQuery, _);

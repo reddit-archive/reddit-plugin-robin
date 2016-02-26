@@ -16,6 +16,11 @@ class Robin(Plugin):
         "robin": LocalizedModule("robin.js",
             "websocket.js",
             TemplateFileSource("robin/robinmessage.html"),
+            TemplateFileSource("robin/robinroomparticipant.html"),
+            "errors.js",
+            "models/validators.js",
+            "robin/models.js",
+            "robin/views.js",
             "robin/init.js",
         ),
     }

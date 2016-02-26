@@ -1,21 +1,50 @@
-<div class="robin-chat">
+<div class="robin-chat" id="robinChat">
     <header class="robin-chat--header">
         <h1>chat in &#32;<span class="robin-chat--room-name">${thing.room._id}</span></h1>
     </header>
 
-    <div id="robinScrollContainer" class="robin-chat--window">
-        <div id="robinChatList" class="robin-chat--message-list"></div>
+    <div class="robin-chat--main">
+        <div id="robinChatWindow" class="robin-chat--window">
+            <div id="robinChatMessageList" class="robin-chat--message-list"></div>
+        </div>
+
+        <div id="robinChatInput" class="robin-chat--input">
+            <form id="robinSendMessage" action="/api/robin/${thing.room._id}/message" method="POST">
+                <input type="text"
+                        class="c-form-control"
+                        name="message"
+                        autocomplete="off"
+                        required>
+                <input type="submit" value="send">
+                <span class="status error" style="display:none"></span>
+            </form>
+        </div>
     </div>
 
-    <div class="robin-chat--input">
-        <form id="send-message" action="/api/robin/${thing.room._id}/message" method="POST">
-            <input type="text"
-                    class="c-form-control"
-                    name="message"
-                    autocomplete="off"
-                    required>
-            <input type="submit" value="send">
-            <span class="status error" style="display:none"></span>
-        </form>
+    <div class="robin-chat--sidebar">
+        <div id="robinVoteWidget" class="robin-chat--sidebar-widget robin-chat--vote-widget">
+            <div class="robin-chat--vote-buttons">
+                <button class="robin-chat--vote robin-chat--vote-abandon"
+                        value="ABANDON">
+                    abandon
+                </button>
+                <button class="robin-chat--vote robin-chat--vote-continue"
+                        value="CONTINUE">
+                    continue
+                </button>
+                <button class="robin-chat--vote robin-chat--vote-increase"
+                        value="INCREASE">
+                    increase
+                </button>
+            </div>
+            <div class="robin-chat--confirm-button">
+                <button class="robin-chat--confirm" disabled>
+                    confirm
+                </button>
+            </div>
+        </div>
+
+        <div id="robinUserList" class="robin-chat--sidebar-widget robin-chat--user-list-widget">
+        </div>
     </div>
 </div>

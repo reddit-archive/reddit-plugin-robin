@@ -1,9 +1,9 @@
+// TODO pull in most recent colors
 @color-semi-black: #222222;
 @color-grey: #A5A4A4;
 @color-pale-grey: #EFEFED;
 @color-white: #FFFFFF;
-
-@color-robin--self: #0079D3;
+@color-off-white: #FCFCF7;
 
 body {
     background-color: @color-pale-grey;
@@ -22,22 +22,64 @@ body {
 }
 
 
-.robin-chat {
-    .robin-chat--header {
-        h1 {
-            margin: 0;
-            line-height: 20px;
-        }
+@robin--color-text-default: @color-semi-black;
+@robin--color-text-inverted: @color-pale-grey;
+@robin--color-text-system: @color-grey;
+@robin--color-text-user: #0079D3;
 
-        padding: 15px 20px;
-        border-bottom: 1px solid darken(@color-pale-grey, 5%);
+.robin--username {
+    color: @robin--color-text-default;
+
+    .robin--user-class--self & {
+        color: @robin--color-text-user;
     }
+
+    .robin--user-class--system & {
+        color: @robin--color-text-system;
+    }
+}
+
+
+.robin-chat {
+
+    @robin-chat--font-size-sidebar: 14px;
+    @robin-chat--line-height-sidebar: 15px;
+    @robin-chat--window-height: 300px;
+    @robin-chat--sidebar-width: 300px;
+    @robin-chat--color-title: @color-grey;
+    @robin-chat--color-sidebar: @color-grey;
+    @robin-chat--color-vote-default: darken(@color-off-white, 5%);
+    @robin-chat--color-vote-hover: @color-off-white;
+    @robin-chat--color-vote-active: @color-grey;
+    @robin-chat--color-vote-down: darken(@color-grey, 5%);
+
+    // TODO import all of the less mixins for flexbox rendering
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    .robin-chat--header {
+        border-bottom: 1px solid darken(@color-pale-grey, 5%);
+        flex: 1 0 100%;
+        padding: 15px 20px;
+        
+        h1 {
+            line-height: 20px;
+            margin: 0;
+        }
+    }
+
     .robin-chat--room-name {
-        color: @color-grey;
+        color: @robin-chat--color-title;
+    }
+
+    .robin-chat--main {
+        flex: 1 1;
     }
 
     .robin-chat--window {
-        height: 300px;
+        height: @robin-chat--window-height;
         overflow-x: hidden;
         overflow-y: scroll;
     }
@@ -52,6 +94,89 @@ body {
         margin-right: 15px;
     }
 
+    .robin-chat--sidebar {
+        background-color: @robin-chat--color-sidebar;
+        flex: 0 0 @robin-chat--sidebar-width;
+    }
+
+    .robin-chat--sidebar-widget {
+        padding: 15px;
+        border-bottom: 1px solid lighten(@robin-chat--color-sidebar, 5%);
+        // border-bottom: 1px solid darken(@robin-chat--color-sidebar, 5%);
+
+        &:first-child {
+            border-top: 0;
+        }
+
+        &:last-child {
+            border-bottom: 0;
+        }
+    }
+
+    .robin-chat--vote-buttons {
+        display: flex;
+    }
+
+    ._vote-button-style {
+        appearance: none;
+        background-color: @robin-chat--color-vote-default;
+        border: none;
+        display: block;
+        line-height: 30px;
+        margin: 5px;
+        padding-bottom: 10px;
+        padding-top: 10px;
+        text-align: center;
+        text-transform: uppercase;
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+        &:last-child {
+            margin-right: 0;
+        }
+
+        &[disabled] {
+            font-style: italic;
+        }
+
+        &:hover {
+            background-color: @robin-chat--color-vote-hover;
+        }
+
+        &:focus {
+            background-color: @robin-chat--color-vote-active;
+            outline: 1px solid lighten(@robin-chat--color-vote-active, 10%);
+        }
+
+        &.robin--active,
+        &:active {
+            background-color: @robin-chat--color-vote-down;
+        }
+    }
+
+    .robin-chat--vote {
+        // TODO prefixes
+        flex: 1 1;
+        transition: background-color 0.15s;
+        ._vote-button-style();
+    }
+
+    .robin-chat--confirm {
+        width: 100%;
+        ._vote-button-style();
+    }
+
+    .robin-chat--user-list-widget {
+        font-size: @robin-chat--font-size-sidebar;
+        line-height: @robin-chat--line-height-sidebar;
+
+        .robin--username {
+            color: @robin--color-text-inverted;
+        }
+    }
+
     .robin-chat--input {
         padding: 10px;
 
@@ -59,32 +184,79 @@ body {
             display: none;
         }
     }
+
 }
 
+
 .robin-message {
+
+    color: @robin--color-text-default;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 15px;
     padding: 2px 5px 3px;
-    color: @color-semi-black;
 
     .robin-message--from {
         font-weight: bold;
     }
 
     .robin-message--timestamp {
-        color: @color-grey;
+        color: @robin--color-text-system;
         font-size: 11px;
     }
 
-    &.robin-message--user-class--system {
+    &.robin--user-class--system {
+        color: @robin--color-text-system;
         font-style: italic;
-        color: @color-grey;
     }
 
-    &.robin-message--user-class--self {
-        .robin-message--from {
-            color: @color-robin--self;
+}
+
+
+.robin-room-participant {
+
+    .robin-room-participant--vote:after,
+    .robin-room-participant--confirm:after {
+        color: grey;
+    }
+
+    &.robin--vote-class--unknown {
+        .robin-room-participant--vote:after {
+            content: "?";
         }
     }
+
+    &.robin--vote-class--abandon {
+        .robin-room-participant--vote:after {
+            content: "-";
+            color: red;
+        }
+    }
+
+    &.robin--vote-class--continue {
+        .robin-room-participant--vote:after {
+            content: "*";
+            color: blue;
+        }
+    }
+
+    &.robin--vote-class--increase {
+        .robin-room-participant--vote:after {
+            content: "+";
+            color: green;
+        }
+    }
+
+    &.robin--confirm-class--unconfirmed {
+        .robin-room-participant--confirm:after {
+            content: "?";
+        }
+    }
+
+    &.robin--confirm-class--confirmed {
+        .robin-room-participant--confirm:after {
+            content: "!";
+        }
+    }
+
 }
