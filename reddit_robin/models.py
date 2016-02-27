@@ -278,6 +278,8 @@ def populate():
             room.add_participants(users)
 
 def clear_all():
+    from pylons import app_globals as g
+    g.cache.delete("current_robin_room")
     for cls in (RobinRoom, ParticipantVoteByRoom, ParticipantPresenceByRoom,
                 RoomsByParticipant):
         cls._cf.truncate()
