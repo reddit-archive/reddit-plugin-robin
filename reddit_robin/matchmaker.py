@@ -42,31 +42,29 @@ def make_new_room():
     return room
 
 
-def run_waitinglist(new_room_size=2):
-    global current_room
-    global current_room_count
-
-    current_room = make_new_room()  # if the queue proc dies we may orphan someone
-    current_room_count = 0
-
+def run_waitinglist():
     @g.stats.amqp_processor("robin_waitinglist_q")
     def process_waitinglist(msg):
-        global current_room
-        global current_room_count
-
         user_id36 = msg.body
         user = Account._byID36(user_id36, data=True)
         if RobinRoom.get_room_for_user(user):
             print "%s already in room" % user.name
             return
 
-        current_room.add_participants([user])
-        current_room_count += 1
-        print "added %s to %s" % (user.name, current_room._id)
+        with g.make_lock("robin_room", "global"):
+            current_room_name = g.cache.get("current_robin_room")
+            if not current_room_name:
+                current_room = make_new_room()
+            else:
+                current_room = RobinRoom._byID(current_room_name)
 
-        if current_room_count >= new_room_size:
-            current_room = make_new_room()
-            current_room_count = 0
+            current_room.add_participants([user])
+            print "added %s to %s" % (user.name, current_room._id)
+
+            if current_room_name:
+                g.cache.delete("current_robin_room")
+            else:
+                g.cache.set("current_robin_room", current_room._id)
 
     amqp.consume_items("robin_waitinglist_q", process_waitinglist)
 
