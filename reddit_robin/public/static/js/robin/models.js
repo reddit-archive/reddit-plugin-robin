@@ -80,6 +80,7 @@
       OneOf('userClass', USER_CLASSES),
       OneOf('vote', VOTE_TYPES),
       IsBool('confirmed'),
+      IsBool('present'),
     ],
 
     defaults: {
@@ -87,6 +88,7 @@
       userClass: DEFAULT_USER_CLASS,
       vote: NO_VOTE_TYPE,
       confirmed: false,
+      present: false,
     },
 
     canVote: function() {

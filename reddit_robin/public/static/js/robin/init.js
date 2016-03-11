@@ -143,14 +143,42 @@
       this.systemUser = new models.RobinUser({
         name: '[robin]',
         userClass: 'system',
+        present: true,
       });
 
-      this.currentUser = new models.RobinUser({
-        name: this.options.logged_in_username,
-        userClass: 'self',
-      });
+      var currentUser;
+      var participants = [];
 
-      this.roomParticipants = new models.RobinRoomParticipants([this.currentUser]);
+      if (options.participants) {
+        options.participants.forEach(function(user) {
+          var isCurrentUser = (user.name === options.logged_in_username);
+          var modelAttributes = _.clone(user);
+
+          if (isCurrentUser) {
+            modelAttributes.userClass = 'self';
+            modelAttributes.present = true;
+          }
+
+          var userModel = new models.RobinUser(modelAttributes);
+          
+          if (isCurrentUser) {
+            currentUser = userModel;
+          }
+
+          participants.push(userModel)
+        });
+      }
+
+      if (!currentUser) {
+        currentUser = new models.RobinUser({
+          name: this.options.logged_in_username,
+          userClass: 'self',
+          present: true,
+        });
+      }
+
+      this.currentUser = currentUser;
+      this.roomParticipants = new models.RobinRoomParticipants(participants);
 
       // initialize some child views 
       this.chatInput = new views.RobinChatInput({
@@ -167,9 +195,8 @@
 
       this.userListWidget = new views.RobinUserListWidget({
         el: this.$el.find('#robinUserList')[0],
+        participants: participants,
       });
-
-      this.userListWidget.addUser(this.currentUser);
 
       // wire up events
       this._listenToEvents(this.room, this.roomEvents);
@@ -250,6 +277,7 @@
       el: document.getElementById('robinChat'),
       room_id: r.config.robin_room_id,
       websocket_url: r.config.robin_websocket_url,
+      participants: r.config.robin_user_list,
       logged_in_username: r.config.logged,
     });
   });

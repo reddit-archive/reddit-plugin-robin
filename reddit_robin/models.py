@@ -187,6 +187,7 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
         ret = {}
         for user_id36, vote_str in obj._t.iteritems():
             ret[int(user_id36, 36)] = RoomVote.from_string(vote_str)
+        return ret
 
     @classmethod
     def set_vote(cls, room, user, vote):
