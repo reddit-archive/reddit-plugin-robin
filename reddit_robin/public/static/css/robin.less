@@ -197,17 +197,32 @@ body {
     padding: 2px 5px 3px;
 
     .robin-message--from {
-        font-weight: bold;
+        font-weight: 500;
+        margin-left: 5px;
     }
 
     .robin-message--timestamp {
         color: @robin--color-text-system;
         font-size: 11px;
+        font-weight: 300;
+    }
+
+    .robin-message--body {
+        margin-left: 5px;
+    }
+
+    &.robin-message--display-compact {
+        .robin-message--body {
+            margin-left: 15px;
+        }
     }
 
     &.robin--user-class--system {
         color: @robin--color-text-system;
-        font-style: italic;
+
+        .robin-message--body {
+            font-style: italic;
+        }
     }
 
 }

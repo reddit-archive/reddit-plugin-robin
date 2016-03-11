@@ -1,5 +1,11 @@
-<div class="robin-message robin--user-class--<%- thing.userClass %>">
-    <span class="robin-message--from robin--username"><%- thing.from %></span>
+<div class="robin-message
+        <% if (thing.displayCompact) { %>
+            robin-message--display-compact
+        <% } %>
+        robin--user-class--<%- thing.userClass %>">
     <time class="robin-message--timestamp" datetime="<%- thing.isoDate %>"><%- thing.timestamp %></time>
+    <% if (!thing.displayCompact) { %>
+      <span class="robin-message--from robin--username"><%- thing.from %></span>
+    <% } %>
     <span class="robin-message--body"><%- thing.body %></span>
 </div>
