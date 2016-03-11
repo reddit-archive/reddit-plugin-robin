@@ -91,8 +91,12 @@
       present: false,
     },
 
+    isConfirmed: function() {
+      return this.get('confirmed');
+    },
+
     canVote: function() {
-      return !this.get('confirmed');
+      return !this.isConfirmed();
     },
 
     canConfirm: function() {

@@ -198,6 +198,15 @@
         participants: participants,
       });
 
+      // set the button state in the voting widget
+      if (this.currentUser.canConfirm() || this.currentUser.isConfirmed()) {
+        this.voteWidget.setActiveVote(this.currentUser.get('vote'));
+      }
+
+      if (this.currentUser.isConfirmed()) {
+        this.voteWidget.setConfirmedState();
+      }
+
       // wire up events
       this._listenToEvents(this.room, this.roomEvents);
       this._listenToEvents(this.roomParticipants, this.roomParticipantsEvents);
