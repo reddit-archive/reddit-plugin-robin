@@ -6,6 +6,7 @@
 
     initialize: function() {
       this.$chatList = this.$el.find('#robinChatMessageList');
+      this.lastMessageFrom = null;
     },
 
     addMessage: function(user, message) {
@@ -20,6 +21,13 @@
         userClass: user.get('userClass'),
         body: message.get('message'),
       };
+
+      if (user.get('name') === this.lastMessageFrom) {
+        templateData.displayCompact = true;
+      } else {
+        this.lastMessageFrom = user.get('name');
+      }
+
       var el = r.templates.make(this.TEMPLATE_NAME, templateData);
       this.$chatList.append(el);
 
