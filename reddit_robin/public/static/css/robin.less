@@ -42,12 +42,10 @@ body {
 
 .robin-chat {
 
-    @robin-chat--font-size-sidebar: 14px;
-    @robin-chat--line-height-sidebar: 15px;
     @robin-chat--window-height: 300px;
     @robin-chat--sidebar-width: 300px;
     @robin-chat--color-title: @color-grey;
-    @robin-chat--color-sidebar: @color-grey;
+    @robin-chat--color-sidebar: @color-pale-grey;
     @robin-chat--color-vote-default: darken(@color-off-white, 5%);
     @robin-chat--color-vote-hover: @color-off-white;
     @robin-chat--color-vote-active: @color-grey;
@@ -170,11 +168,8 @@ body {
     }
 
     .robin-chat--user-list-widget {
-        font-size: @robin-chat--font-size-sidebar;
-        line-height: @robin-chat--line-height-sidebar;
-
-        .robin--username {
-            color: @robin--color-text-inverted;
+        .robin-room-participant {
+            margin-bottom: 5px;
         }
     }
 
@@ -216,48 +211,317 @@ body {
 
 .robin-room-participant {
 
-    .robin-room-participant--vote:after,
-    .robin-room-participant--confirm:after {
-        color: grey;
+    .robin--username {
+        line-height: 20px;
+        font-size: 14px;
+        font-weight: 300;
+        color: @color-semi-black;
+        display: inline-block;
+        vertical-align: middle;
     }
 
-    &.robin--vote-class--unknown {
-        .robin-room-participant--vote:after {
-            content: "?";
+    &.robin--presence-class--away {
+        .robin--username {
+            font-style: italic;
+            color: @color-grey;
         }
     }
 
+    .robin--icon {
+        ._robin-icon-unvoted();
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+
     &.robin--vote-class--abandon {
-        .robin-room-participant--vote:after {
-            content: "-";
-            color: red;
+        .robin--icon {
+            ._robin-icon-voted-abandon();
         }
     }
 
     &.robin--vote-class--continue {
-        .robin-room-participant--vote:after {
-            content: "*";
-            color: blue;
+        .robin--icon {
+            ._robin-icon-voted-continue();
         }
     }
 
+
     &.robin--vote-class--increase {
-        .robin-room-participant--vote:after {
-            content: "+";
-            color: green;
+        .robin--icon {
+            ._robin-icon-voted-increase();
+        }
+    }
+
+    &.robin--presence-class--away {
+        .robin--icon {
+            ._robin-icon-unvoted-away();
+        }
+
+        &.robin--vote-class--abandon {
+            .robin--icon {
+                ._robin-icon-voted-abandon-away();
+            }
+        }
+
+        &.robin--vote-class--continue {
+            .robin--icon {
+                ._robin-icon-voted-continue-away();
+            }
+        }
+
+        &.robin--vote-class--increase {
+            .robin--icon {
+                ._robin-icon-voted-increase-away();
+            }
         }
     }
 
     &.robin--confirm-class--unconfirmed {
-        .robin-room-participant--confirm:after {
-            content: "?";
+        &.robin--vote-class--abandon {
+            .robin--icon {
+                ._robin-icon-voted-abandon-unconfirmed();
+            }
+        }
+
+        &.robin--vote-class--continue {
+            .robin--icon {
+                ._robin-icon-voted-continue-unconfirmed();
+            }
+        }
+
+        &.robin--vote-class--increase {
+            .robin--icon {
+                ._robin-icon-voted-increase-unconfirmed();
+            }
         }
     }
 
-    &.robin--confirm-class--confirmed {
-        .robin-room-participant--confirm:after {
-            content: "!";
+    &.robin--presence-class--away.robin--confirm-class--unconfirmed {
+        &.robin--vote-class--abandon {
+            .robin--icon {
+                ._robin-icon-voted-abandon-unconfirmed-away();
+            }
+        }
+
+        &.robin--vote-class--continue {
+            .robin--icon {
+                ._robin-icon-voted-continue-unconfirmed-away();
+            }
+        }
+
+        &.robin--vote-class--increase {
+            .robin--icon {
+                ._robin-icon-voted-increase-unconfirmed-away();
+            }
         }
     }
 
+    @media
+    only screen and (min-resolution: 2dppx),
+    only screen and (-webkit-min-device-pixel-ratio: 2) {
+        .robin--icon {
+            /* fixes HDPI icons in dev */
+            background-size: 100%; 
+            ._robin-icon-unvoted_2x();
+        }
+
+        &.robin--vote-class--abandon {
+            .robin--icon {
+                ._robin-icon-voted-abandon_2x();
+            }
+        }
+
+        &.robin--vote-class--continue {
+            .robin--icon {
+                ._robin-icon-voted-continue_2x();
+            }
+        }
+
+
+        &.robin--vote-class--increase {
+            .robin--icon {
+                ._robin-icon-voted-increase_2x();
+            }
+        }
+
+        &.robin--presence-class--away {
+            .robin--icon {
+                ._robin-icon-unvoted-away_2x();
+            }
+
+            &.robin--vote-class--abandon {
+                .robin--icon {
+                    ._robin-icon-voted-abandon-away_2x();
+                }
+            }
+
+            &.robin--vote-class--continue {
+                .robin--icon {
+                    ._robin-icon-voted-continue-away_2x();
+                }
+            }
+
+            &.robin--vote-class--increase {
+                .robin--icon {
+                    ._robin-icon-voted-increase-away_2x();
+                }
+            }
+        }
+
+        &.robin--confirm-class--unconfirmed {
+            &.robin--vote-class--abandon {
+                .robin--icon {
+                    ._robin-icon-voted-abandon-unconfirmed_2x();
+                }
+            }
+
+            &.robin--vote-class--continue {
+                .robin--icon {
+                    ._robin-icon-voted-continue-unconfirmed_2x();
+                }
+            }
+
+            &.robin--vote-class--increase {
+                .robin--icon {
+                    ._robin-icon-voted-increase-unconfirmed_2x();
+                }
+            }
+        }
+
+        &.robin--presence-class--away.robin--confirm-class--unconfirmed {
+            &.robin--vote-class--abandon {
+                .robin--icon {
+                    ._robin-icon-voted-abandon-unconfirmed-away_2x();
+                }
+            }
+
+            &.robin--vote-class--continue {
+                .robin--icon {
+                    ._robin-icon-voted-continue-unconfirmed-away_2x();
+                }
+            }
+
+            &.robin--vote-class--increase {
+                .robin--icon {
+                    ._robin-icon-voted-increase-unconfirmed-away_2x();
+                }
+            }
+        }
+    }
+
+}
+
+._robin-icon-unvoted() {
+    background-image: url('../robin-icons/robin-icon-unvoted.png'); /* SPRITE */
+}
+
+._robin-icon-voted-abandon() {
+    background-image: url('../robin-icons/robin-icon-voted-abandon.png'); /* SPRITE */
+}
+
+._robin-icon-voted-continue() {
+    background-image: url('../robin-icons/robin-icon-voted-continue.png'); /* SPRITE */
+}
+
+._robin-icon-voted-increase() {
+    background-image: url('../robin-icons/robin-icon-voted-increase.png'); /* SPRITE */
+}
+
+._robin-icon-unvoted-away() {
+    background-image: url('../robin-icons/robin-icon-unvoted-away.png'); /* SPRITE */
+}
+
+._robin-icon-voted-abandon-away() {
+    background-image: url('../robin-icons/robin-icon-voted-abandon-away.png'); /* SPRITE */
+}
+
+._robin-icon-voted-continue-away() {
+    background-image: url('../robin-icons/robin-icon-voted-continue-away.png'); /* SPRITE */
+}
+
+._robin-icon-voted-increase-away() {
+    background-image: url('../robin-icons/robin-icon-voted-increase-away.png'); /* SPRITE */
+}
+
+._robin-icon-voted-abandon-unconfirmed() {
+    background-image: url('../robin-icons/robin-icon-voted-abandon-unconfirmed.png'); /* SPRITE */
+}
+
+._robin-icon-voted-continue-unconfirmed() {
+    background-image: url('../robin-icons/robin-icon-voted-continue-unconfirmed.png'); /* SPRITE */
+}
+
+._robin-icon-voted-increase-unconfirmed() {
+    background-image: url('../robin-icons/robin-icon-voted-increase-unconfirmed.png'); /* SPRITE */
+}
+
+._robin-icon-voted-abandon-unconfirmed-away() {
+    background-image: url('../robin-icons/robin-icon-voted-abandon-unconfirmed-away.png'); /* SPRITE */
+}
+
+._robin-icon-voted-continue-unconfirmed-away() {
+    background-image: url('../robin-icons/robin-icon-voted-continue-unconfirmed-away.png'); /* SPRITE */
+}
+
+._robin-icon-voted-increase-unconfirmed-away() {
+    background-image: url('../robin-icons/robin-icon-voted-increase-unconfirmed-away.png'); /* SPRITE */
+}
+
+._robin-icon-unvoted_2x() {
+    background-image: url('../robin-icons/robin-icon-unvoted_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-abandon_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-abandon_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-continue_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-continue_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-increase_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-increase_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-unvoted-away_2x() {
+    background-image: url('../robin-icons/robin-icon-unvoted-away_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-abandon-away_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-abandon-away_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-continue-away_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-continue-away_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-increase-away_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-increase-away_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-abandon-unconfirmed_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-abandon-unconfirmed_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-continue-unconfirmed_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-continue-unconfirmed_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-increase-unconfirmed_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-increase-unconfirmed_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-abandon-unconfirmed-away_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-abandon-unconfirmed-away_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-continue-unconfirmed-away_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-continue-unconfirmed-away_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+._robin-icon-voted-increase-unconfirmed-away_2x() {
+    background-image: url('../robin-icons/robin-icon-voted-increase-unconfirmed-away_2x.png'); /* SPRITE pixel-ratio=2 */
 }
