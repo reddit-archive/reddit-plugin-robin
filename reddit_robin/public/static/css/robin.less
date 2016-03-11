@@ -40,6 +40,150 @@ body {
 }
 
 
+.robin-home {
+
+    @robin-home--color-thebutton: #24A0ED;
+    @robin-home--color-thebutton-container: #EAEAEA;
+
+    overflow: auto;
+    text-align: center;
+
+    .robin-home--thebutton {
+        font-weight: 500;
+        line-height: 25px;
+        outline: none;
+        margin: 10px;
+        background-color: @robin-home--color-thebutton;
+        background-image: linear-gradient(-180deg, rgba(255,255,255,0.10) 0%, rgba(0,0,0,0.10) 100%);
+        border: 1px solid darken(@robin-home--color-thebutton, 5%);
+        box-shadow: 0px 4px 0px 0px darken(@robin-home--color-thebutton, 15%),
+                    0px 0px 0px 0px rgba(255,255,255,0.60),
+                    0px 6px 4px 0px rgba(0,0,0,0.30),
+                    inset 0px 1px 0px 0px rgba(255,255,255,0.20);
+
+        border-radius: 5px;
+        height: 40px;
+        width: 170px;
+        transform: translate(0, -4px);
+        transition: all 0.1s;
+    }
+
+    .robin-home--thebutton-text {
+        color: @robin--color-text-inverted;
+        font-size: 12px;
+        text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.4);
+        opacity: 1;
+        transition: opacity 0.2s;
+    }
+    
+    .robin--thebutton-state--locked,
+    .robin--thebutton-state--pressed {
+        .robin-home--thebutton-text {
+            opacity: 0;
+        }
+    }
+    
+    .robin--thebutton-state--unlocked .robin-home--thebutton:hover {
+        background-image: none;
+        transform: translate(0, -3px);
+        box-shadow: 0px 3px 0px 0px darken(@robin-home--color-thebutton, 15%),
+                0px 0px 0px 0px rgba(255,255,255,0.60),
+                0px 4px 4px 0px rgba(0,0,0,0.30),
+                inset 0px 1px 0px 0px rgba(255,255,255,0.20);
+    }
+
+    .robin--thebutton-state--locked > .robin-home--thebutton,
+    .robin--thebutton-state--unlocked .robin-home--thebutton:active {
+        background-color: darken(@robin-home--color-thebutton, 3%) ; //#1E92D9
+        box-shadow: 0px 0px 0px 0px darken(@robin-home--color-thebutton, 15%),
+                    0px 1px 0px 0px rgba(255,255,255,0.60),
+                    0px 0px 3px 0px rgba(0,0,0,0.30),
+                    inset 0px 1px 0px 0px rgba(255,255,255,0.20);
+        transform: translate(0, 0);
+    }
+
+    .robin--thebutton-state--pressed > .robin-home--thebutton {
+        background-image: none !important;
+        background-color: transparent !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+        box-shadow: 0px 0px 0px 0px #D7D7D7,
+                    0px 1px 0px 0px rgba(255,255,255,0.40),
+                    0px 0px 2px 0px rgba(0,0,0,0.10),
+                    inset 0px 2px 0px 0px rgba(255,255,255,0.20) !important;
+        transform: translate(0, 0) !important;
+    }
+
+    .robin-home--thebutton-container {
+        position: relative;
+        display: inline-block;
+        margin: 100px auto;
+        background: @robin-home--color-thebutton-container;
+        border: 1px solid #E0E0E0;
+        box-shadow: inset 0px 1px 1px 0px rgba(73,73,73,0.10);
+        border-radius: 5px;
+
+        &.robin--thebutton-state--locked,
+        &.robin--thebutton-state--unlocking {
+            &:after,
+            &:before {
+                cursor: pointer;
+                text-align: center;
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                border-radius: 5px;
+                z-index: 100;
+                transform: translate(0, 0) scale(1, 1);
+                background-position: center center;
+                background-repeat: no-repeat;
+                transition: all 0.2s;
+                opacity: 1;
+                line-height: 60px;
+                font-size: 14px;
+            }
+
+            &:before {
+                content: '';
+                display: block;
+            }
+        }
+
+        &.robin--thebutton-state--locked {
+            &:before {
+                background-color: rgba(73,73,73,0.95);
+                background-image: data-uri('../robin-icons/robin-icon-robin-big.png');
+                background-size: 30px 30px;
+                box-shadow: 0px 1px 5px 0px rgba(0,0,0,0.20);
+            }
+        }
+
+        &.robin--thebutton-state--locked:hover {
+            &:before {
+                transform: translate(0, -10px) scale(1, 1);
+                background-color: rgba(73,73,73,0.70);
+                // background-image: data-uri('unlocked-icon.png');
+                // background-size: 22px 35px;
+                box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+            }
+        }
+
+        &.robin--thebutton-state--unlocking {
+            & {
+                transition-delay: 0.3s;
+            }
+
+            &:before {
+                opacity: 0;
+                transform: translate(0, -80px) scale(1, -1);
+            }
+        }
+    }
+
+}
+
+
 .robin-chat {
 
     @robin-chat--window-height: 300px;

@@ -1,44 +1,12 @@
-<div id="join-robin">
-  <button class="join-button btn" onclick="return joinRoom(this);">JOIN</button>
+<% from r2.lib import js %>
+
+<div class="robin-home">
+    <div id="joinRobinContainer"
+            class="robin-home--thebutton-container robin--thebutton-state--locked">
+        <button class="robin-home--thebutton" id="joinRobin">
+            <span class="robin-home--thebutton-text">Participate</span>
+        </button>
+    </div>
 </div>
 
-<script>
-function joinRoom(elem) {
-  $.ajax({
-    type: 'POST',
-    url: '/api/join_room',
-    data: {
-      'uh': r.config.modhash,
-    },
-  });
-
-  (function waitForAssignment (i) {
-    setTimeout(function () {
-      res = getAssignment();
-      if ('roomId' in res.responseJSON) {
-        var roomId = res.responseJSON.roomId;
-        r.log('got roomId: ' + roomId);
-        $.redirect("/robin/" + roomId);
-      } else if (--i) {
-        waitForAssignment(i);
-      } else {
-        r.log('ran out of time waiting');
-      }
-    }, 1000);
-  })(10);
-
-  return false;
-}
-
-function getAssignment() {
-  return $.ajax({
-    type: 'GET',
-    async: false,
-    url: '/api/room_assignment.json',
-    dataType: 'json',
-    data: {
-      'uh': r.config.modhash,
-    },
-  });
-}
-</script>
+${unsafe(js.use("robin-join"))}

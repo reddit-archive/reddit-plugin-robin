@@ -3,6 +3,7 @@ from pylons.i18n import N_
 from r2.config.routing import not_in_sr
 from r2.lib.configparse import ConfigValue
 from r2.lib.js import (
+    Module,
     LocalizedModule,
     TemplateFileSource,
 )
@@ -22,6 +23,10 @@ class Robin(Plugin):
             "robin/models.js",
             "robin/views.js",
             "robin/init.js",
+        ),
+
+        "robin-join": Module("robin-join.js",
+            "robin/join.js",
         ),
     }
 
