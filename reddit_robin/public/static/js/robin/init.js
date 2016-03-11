@@ -197,15 +197,23 @@
       return bound;
     },
 
-    addChatMessage: function(userName, messageText) {
+    _ensureUser: function(userName, setAttrs) {
       var user = this.roomParticipants.get(userName);
+
       if (!user) {
-        user = new models.RobinUser({
+        user = new models.RobinUser(_.defaults({
           name: userName,
-        });
+        }, setAttrs));
         this.roomParticipants.add(user);
+      } else if (setAttrs) {
+        user.set(setAttrs);
       }
 
+      return user;
+    },
+
+    addChatMessage: function(userName, messageText) {
+      var user = this._ensureUser(userName, { present: true });
       var message = new models.RobinMessage({
         message: messageText,
       });
@@ -222,16 +230,12 @@
     },
 
     updateUserVote: function(userName, vote, confirmed) {
-      var user = this.roomParticipants.get(userName);
-      
-      if (!user) {
-        user = new models.RobinUser({
-          name: userName,
-          vote: vote,
-          confirmed: confirmed,
-        });
-        this.roomParticipants.add(user);
-      }
+      var setAttrs = {
+        vote: vote,
+        confirmed: confirmed,
+        present: true,
+      };
+      var user = this._ensureUser(userName, setAttrs);
 
       if (confirmed) {
         this.addSystemMessage(userName + ' confirmed their vote to ' + vote);
