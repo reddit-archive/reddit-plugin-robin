@@ -142,6 +142,12 @@
   var RobinUserListWidget = Backbone.View.extend({
     TEMPLATE_NAME: 'robin/robinroomparticipant',
 
+    initialize: function(options) {
+      if (options.participants) {
+        options.participants.forEach(this.addUser.bind(this));
+      }
+    },
+
     addUser: function(user) {
       var $el = $(this.render(user));
       this.$el.append($el);
@@ -160,6 +166,7 @@
         userClass: user.get('userClass'),
         voteClass: user.get('vote').toLowerCase(),
         confirmClass: user.get('confirmed') ? 'confirmed' : 'unconfirmed',
+        presenceClass: user.get('present') ? 'present' : 'away',
       };
       return r.templates.make(this.TEMPLATE_NAME, templateData);
     },

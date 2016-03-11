@@ -16,6 +16,7 @@ from r2.lib.validator import (
     VOneOf,
     VUser,
 )
+from r2.models import Account
 
 from .validators import VRobinRoom
 from .pages import (
@@ -66,12 +67,33 @@ class RobinController(RedditController):
         path = posixpath.join("/robin", str(room._id), c.user._id36)
         websocket_url = websockets.make_url(path, max_age=3600)
 
+        all_user_ids = room.get_all_participants()
+        all_present_ids = room.get_present_participants()
+        all_votes = room.get_all_votes()
+
+        users = Account._byID(all_user_ids)
+        user_list = []
+
+        for user in users.itervalues():
+            if user._id in all_votes:
+                vote = all_votes.get(user._id)
+            else:
+                vote = None
+
+            user_list.append({
+                "name": user.name,
+                "present": user._id in all_present_ids,
+                "vote": vote.name if vote else "NOVOTE",
+                "confirmed": vote.confirmed if vote else False,
+            });
+
         return RobinChatPage(
             title="chat in %s" % room._id,
             content=RobinChat(room=room),
             extra_js_config={
                 "robin_room_id": room._id,
                 "robin_websocket_url": websocket_url,
+                "robin_user_list": user_list,
             },
         ).render()
 
