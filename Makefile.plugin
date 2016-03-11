@@ -1,1 +1,1 @@
-LESS_STYLESHEETS += robin.less
+SPRITED_STYLESHEETS += robin.less
