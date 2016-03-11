@@ -71,7 +71,7 @@ class RobinController(RedditController):
         all_present_ids = room.get_present_participants()
         all_votes = room.get_all_votes()
 
-        users = Account._byID(all_user_ids)
+        users = Account._byID(all_user_ids, data=True)
         user_list = []
 
         for user in users.itervalues():
