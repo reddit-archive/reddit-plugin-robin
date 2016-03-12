@@ -10,6 +10,8 @@ from r2.lib.validator import (
     json_validate,
     validate,
     validatedForm,
+    VAccountByName,
+    VAdmin,
     VBoolean,
     VLength,
     VModhash,
@@ -20,6 +22,7 @@ from r2.models import Account
 
 from .validators import VRobinRoom
 from .pages import (
+    RobinAdmin,
     RobinAll,
     RobinPage,
     RobinChatPage,
@@ -28,6 +31,7 @@ from .pages import (
 )
 from .models import RobinRoom
 from .matchmaker import add_to_waitinglist
+from .reaper import prompt_for_voting, reap_ripe_rooms
 
 
 @add_controller
@@ -46,15 +50,21 @@ class RobinController(RedditController):
         ).render()
 
     @validate(
-        VUser(),
+        VAdmin(),
     )
     def GET_all(self):
-        #if not c.user_is_admin:
-        #    return self.abort403()
-
         return RobinPage(
             title="robin",
             content=RobinAll(),
+        ).render()
+
+    @validate(
+        VAdmin(),
+    )
+    def GET_admin(self):
+        return RobinPage(
+            title="robin",
+            content=RobinAdmin(),
         ).render()
 
     @validate(
@@ -65,6 +75,29 @@ class RobinController(RedditController):
         if not room:
             return self.redirect("/robin/join")
 
+        return self._get_chat_page(room)
+
+    @validate(
+        VAdmin(),
+        room=VRobinRoom("room_id", allow_admin=True),
+    )
+    def GET_force_room(self, room):
+        """Allow admins to view a specific room"""
+        return self._get_chat_page(room)
+
+    @validate(
+        VAdmin(),
+        user=VAccountByName("user"),
+    )
+    def GET_user_room(self, user):
+        """Redirect admins to a user's room"""
+        room = RobinRoom.get_room_for_user(user)
+        if not room:
+            self.abort404()
+
+        self.redirect("/robin/" + room.id)
+
+    def _get_chat_page(self, room):
         path = posixpath.join("/robin", room.id, c.user._id36)
         websocket_url = websockets.make_url(path, max_age=3600)
 
@@ -167,3 +200,17 @@ class RobinController(RedditController):
         room = RobinRoom.get_room_for_user(c.user)
         if room:
             return {"roomId": room.id}
+
+    @validatedForm(
+        VAdmin(),
+        VModhash(),
+    )
+    def POST_admin_prompt(self, form, jquery):
+        prompt_for_voting(room_age_minutes=0)
+
+    @validatedForm(
+        VAdmin(),
+        VModhash(),
+    )
+    def POST_admin_reap(self, form, jquery):
+        reap_ripe_rooms(room_age_minutes=0)

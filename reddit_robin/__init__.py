@@ -62,13 +62,23 @@ class Robin(Plugin):
             conditions={"function": not_in_sr})
         mc("/robin/all", controller="robin", action="all",
             conditions={"function": not_in_sr})
+        mc("/robin/admin", controller="robin", action="admin",
+            conditions={"function": not_in_sr})
         mc("/robin/join", controller="robin", action="join",
+            conditions={"function": not_in_sr})
+        mc("/robin/:room_id", controller="robin", action="force_room",
+            conditions={"function": not_in_sr})
+        mc("/robin/user/:user", controller="robin", action="user_room",
             conditions={"function": not_in_sr})
         mc("/api/robin/:room_id/:action", controller="robin",
             conditions={"function": not_in_sr})
         mc("/api/join_room", controller="robin", action="join_room",
             conditions={"function": not_in_sr})
         mc("/api/room_assignment", controller="robin", action="room_assignment",
+            conditions={"function": not_in_sr})
+        mc("/api/admin_prompt", controller="robin", action="admin_prompt",
+            conditions={"function": not_in_sr})
+        mc("/api/admin_reap", controller="robin", action="admin_reap",
             conditions={"function": not_in_sr})
 
     def load_controllers(self):
