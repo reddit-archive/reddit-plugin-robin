@@ -66,9 +66,9 @@
 
       e.target.disabled = true;
       $theButtonContainer.addClass(PRESSED_STATE)
-      
+
       joinRoom().then(function onDone(roomId) {
-        $.redirect("/robin/" + roomId);
+        $.redirect("/robin/");
       }, function onFail() {
         e.target.disabled = false;
         $theButtonContainer.removeClass(PRESSED_STATE);

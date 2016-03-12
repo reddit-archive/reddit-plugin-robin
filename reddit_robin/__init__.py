@@ -58,11 +58,11 @@ class Robin(Plugin):
         )
 
     def add_routes(self, mc):
-        mc("/robin", controller="robin", action="home",
+        mc("/robin", controller="robin", action="chat",
             conditions={"function": not_in_sr})
         mc("/robin/all", controller="robin", action="all",
             conditions={"function": not_in_sr})
-        mc("/robin/:room_id", controller="robin", action="chat",
+        mc("/robin/join", controller="robin", action="join",
             conditions={"function": not_in_sr})
         mc("/api/robin/:room_id/:action", controller="robin",
             conditions={"function": not_in_sr})
