@@ -1,10 +1,9 @@
-from datetime import timedelta
-from uuid import uuid1
+import math
 
 from r2.lib.db import tdb_cassandra
 
 
-class RobinRoom(tdb_cassandra.Thing):
+class RobinRoom(tdb_cassandra.UuidThing):
     _use_db = True
     _connection_pool = 'main'
 
@@ -15,18 +14,43 @@ class RobinRoom(tdb_cassandra.Thing):
     _bool_props = ('is_alive')
 
     @classmethod
-    def create(cls, _id, level):
-        try:
-            cls._byID(_id)
-        except tdb_cassandra.NotFound:
-            pass
-        else:
-            raise ValueError(
-                "{cls} {name} exists".format(cls=cls.__name__, name=_id))
-
-        room = cls(_id=_id, is_alive=True, level=level)
+    def create(cls, level):
+        room = cls(is_alive=True, level=level)
         room._commit()
         return room
+
+    @classmethod
+    def make_room_name(cls, pieces):
+        room_name = ""
+        num_pieces = len(pieces)
+        for i, piece in enumerate(pieces):
+            len_piece = len(piece)
+            chunk_size = max(2, int(math.ceil(len_piece / float(num_pieces))))
+            chunk_position = i / float(num_pieces)
+            chunk_head = int(chunk_position * len_piece)
+            chunk_tail = chunk_head + chunk_size
+            if chunk_tail > len_piece:
+                chunk_tail = len_piece
+                chunk_head = chunk_tail - chunk_size
+            chunk = piece[chunk_head:chunk_tail]
+            room_name += chunk
+        return room_name
+
+    @property
+    def id(self):
+        """Convert UUID to string"""
+        return str(self._id)
+
+    @property
+    def name(self):
+        if hasattr(self, "_name"):
+            return self._name
+
+        user_ids = self.get_all_participants()
+        users = Account._byID(user_ids, data=True, return_dict=False)
+        user_names = [user.name for user in users]
+        self._name = self.make_room_name(user_names)
+        return self._name
 
     def add_participants(self, users):
         ParticipantVoteByRoom.add_participants(self, users)
@@ -60,14 +84,13 @@ class RobinRoom(tdb_cassandra.Thing):
 
     @classmethod
     def merge(cls, room1, room2):
-        new_room_id = room1._id + room2._id
         new_room_level = max([room1.level, room2.level]) + 1
         all_participant_ids = (room1.get_all_participants() +
             room2.get_all_participants())
         all_participants = Account._byID(
             all_participant_ids, data=True, return_dict=False)
 
-        new_room = cls.create(_id=new_room_id, level=new_room_level)
+        new_room = cls.create(level=new_room_level)
         new_room.add_participants(all_participants)
         room1.destroy(reason="INCREASE")
         room2.destroy(reason="INCREASE")
@@ -135,6 +158,9 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
     of users that belong to a room."""
     _use_db = True
     _connection_pool = 'main'
+    _extra_schema_creation_args = dict(
+        key_validation_class=tdb_cassandra.TIME_UUID_TYPE,
+    )
 
     _read_consistency_level = tdb_cassandra.CL.QUORUM
     _write_consistency_level = tdb_cassandra.CL.QUORUM
@@ -149,7 +175,7 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
         vote = RoomVote("NOVOTE", confirmed=False)
         column_value = vote.to_string()
         columns = {user._id36: column_value for user in users}
-        cls._set_values(rowkey, columns)
+        cls._cf.insert(rowkey, columns)
 
     @classmethod
     def get_all_participant_ids(cls, room):
@@ -194,12 +220,15 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
         rowkey = cls._rowkey(room)
         column_value = vote.to_string()
         columns = {user._id36: column_value}
-        cls._set_values(rowkey, columns)
+        cls._cf.insert(rowkey, columns)
 
 
 class ParticipantPresenceByRoom(tdb_cassandra.View):
     _use_db = True
     _connection_pool = 'main'
+    _extra_schema_creation_args = dict(
+        key_validation_class=tdb_cassandra.TIME_UUID_TYPE,
+    )
 
     _read_consistency_level = tdb_cassandra.CL.QUORUM
     _write_consistency_level = tdb_cassandra.CL.QUORUM
@@ -214,13 +243,13 @@ class ParticipantPresenceByRoom(tdb_cassandra.View):
     def mark_joined(cls, room, user):
         rowkey = cls._rowkey(room)
         columns = {user._id36: ""}
-        cls._set_values(rowkey, columns)
+        cls._cf.insert(rowkey, columns)
 
     @classmethod
     def mark_exited(cls, room, user):
         rowkey = cls._rowkey(room)
         columns = {user._id36: ""}
-        cls._remove(rowkey, columns)
+        cls._cf.remove(rowkey, columns)
 
     @classmethod
     def get_present_user_ids(cls, room):
@@ -246,7 +275,7 @@ class RoomsByParticipant(tdb_cassandra.View):
 
     @classmethod
     def add_users_to_room(cls, users, room):
-        column = {uuid1(): room._id}
+        column = {room._id: ""}
         with cls._cf.batch() as b:
             for user in users:
                 rowkey = cls._rowkey(user)
@@ -259,7 +288,7 @@ class RoomsByParticipant(tdb_cassandra.View):
             d = cls._cf.get(rowkey, column_count=1, column_reversed=True)
         except tdb_cassandra.NotFoundException:
             return None
-        room_id = d.values()[0]
+        room_id = d.keys()[0]
         return room_id
 
 
