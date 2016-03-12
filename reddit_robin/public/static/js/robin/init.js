@@ -37,6 +37,29 @@
       'message:part': function(message) {
         this.addSystemMessage(message.user + ' has left the room');
       },
+
+      'message:please_vote': function(message) {
+        this.addSystemMessage('polls are closing soon, please vote');
+      },
+
+      'message:merge': function(message) {
+        this.addSystemMessage('merging with other room...');
+        // TODO: add some jitter before refresh to avoid thundering herd
+        $.refresh()
+      },
+
+      'message:abandon': function(message) {
+        this.addSystemMessage('room has been abandoned');
+      },
+
+      'message:continue': function(message) {
+        this.addSystemMessage('room has been continued');
+      },
+
+      'message:no_match': function(message) {
+        this.addSystemMessage('no compatible room found for matching');
+      },
+
     },
 
     roomEvents: {
