@@ -3,6 +3,7 @@ import random
 from pylons import app_globals as g
 
 from r2.lib import amqp
+from r2.lib import websockets
 from r2.models import Account
 
 from .models import RobinRoom
@@ -40,6 +41,13 @@ def run_waitinglist():
 
             if current_room_id:
                 g.cache.delete("current_robin_room")
+                websockets.send_broadcast(
+                    namespace="/robin/" + current_room.id,
+                    type="updated_name",
+                    payload={
+                        "room_name": current_room.name,
+                    },
+                )
             else:
                 g.cache.set("current_robin_room", current_room.id)
 
