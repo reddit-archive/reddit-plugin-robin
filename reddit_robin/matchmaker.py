@@ -8,33 +8,10 @@ from r2.models import Account
 from .models import RobinRoom
 
 
-def make_room_name_list():
-    try:
-        with open("/usr/share/dict/words", "r") as f:
-            # `apt-get install wamerican` if you don't have this file
-            words = f.readlines()
-    except IOError:
-        # poor man's word list
-        import random
-        letters = "abcdefghijklmnopqrstuvwxyz"
-        words = [
-            "".join(random.sample(letters, 8)) for i in xrange(1000)
-        ]
-
-    words = map(lambda word: word.strip().lower(), words)
-    words = filter(lambda word: len(word) > 6, words)
-    words = filter(lambda word: all(c.isalpha() for c in word), words)
-    return words
-
-
-ROOM_NAMES = make_room_name_list()
-
-
 def make_new_room():
     while True:
-        name = random.choice(ROOM_NAMES)
         try:
-            room = RobinRoom.create(name, level=0)
+            room = RobinRoom.create(level=0)
         except ValueError:
             continue
         else:
@@ -52,19 +29,19 @@ def run_waitinglist():
             return
 
         with g.make_lock("robin_room", "global"):
-            current_room_name = g.cache.get("current_robin_room")
-            if not current_room_name:
+            current_room_id = g.cache.get("current_robin_room")
+            if not current_room_id:
                 current_room = make_new_room()
             else:
-                current_room = RobinRoom._byID(current_room_name)
+                current_room = RobinRoom._byID(current_room_id)
 
             current_room.add_participants([user])
-            print "added %s to %s" % (user.name, current_room._id)
+            print "added %s to %s" % (user.name, current_room.id)
 
-            if current_room_name:
+            if current_room_id:
                 g.cache.delete("current_robin_room")
             else:
-                g.cache.set("current_robin_room", current_room._id)
+                g.cache.set("current_robin_room", current_room.id)
 
     amqp.consume_items("robin_waitinglist_q", process_waitinglist)
 

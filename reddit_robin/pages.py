@@ -33,9 +33,9 @@ class RobinHome(Templated):
 class RobinAll(Templated):
     def __init__(self):
         all_rooms = list(RobinRoom.generate_all_rooms())
-        self.all_rooms = [room._id for room in all_rooms]
+        self.all_rooms = [room.id for room in all_rooms]
         self.user_rooms = [
-            room._id for room in all_rooms if room.is_participant(c.user)]
+            room.id for room in all_rooms if room.is_participant(c.user)]
         Templated.__init__(self)
 
 

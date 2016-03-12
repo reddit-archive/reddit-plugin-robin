@@ -121,6 +121,7 @@
 
     defaults: {
       room_id: null,
+      room_name: null,
       api_type: 'json',
     },
 

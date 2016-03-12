@@ -138,6 +138,7 @@
       // initialize some models for managing state
       this.room = new models.RobinRoom({
         room_id: this.options.room_id,
+        room_name: this.options.room_name,
       });
 
       this.systemUser = new models.RobinUser({
@@ -284,6 +285,7 @@
   $(function() {
     new RobinChat({
       el: document.getElementById('robinChat'),
+      room_name: r.config.robin_room_name,
       room_id: r.config.robin_room_id,
       websocket_url: r.config.robin_websocket_url,
       participants: r.config.robin_user_list,

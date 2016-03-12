@@ -38,7 +38,7 @@ class RobinController(RedditController):
     def GET_home(self):
         room = RobinRoom.get_room_for_user(c.user)
         if room:
-            self.redirect("/robin/{room_id}".format(room_id=room._id))
+            self.redirect("/robin/{room_id}".format(room_id=room.id))
             return
 
         return RobinPage(
@@ -64,7 +64,7 @@ class RobinController(RedditController):
         room=VRobinRoom("room_id"),
     )
     def GET_chat(self, room):
-        path = posixpath.join("/robin", str(room._id), c.user._id36)
+        path = posixpath.join("/robin", room.id, c.user._id36)
         websocket_url = websockets.make_url(path, max_age=3600)
 
         all_user_ids = room.get_all_participants()
@@ -88,10 +88,11 @@ class RobinController(RedditController):
             });
 
         return RobinChatPage(
-            title="chat in %s" % room._id,
+            title="chat in %s" % room.name,
             content=RobinChat(room=room),
             extra_js_config={
-                "robin_room_id": room._id,
+                "robin_room_name": room.name,
+                "robin_room_id": room.id,
                 "robin_websocket_url": websocket_url,
                 "robin_user_list": user_list,
             },
@@ -111,7 +112,7 @@ class RobinController(RedditController):
         # if we decide we want logging, perhaps we can make a logger that
         # watches the amqp bus instead of complicating this request logic?
         websockets.send_broadcast(
-            namespace="/robin/" + room._id,
+            namespace="/robin/" + room.id,
             type="chat",
             payload={
                 "from": c.user.name,
@@ -138,7 +139,7 @@ class RobinController(RedditController):
             return
 
         websockets.send_broadcast(
-            namespace="/robin/" + room._id,
+            namespace="/robin/" + room.id,
             type="vote",
             payload={
                 "from": c.user.name,
@@ -164,4 +165,4 @@ class RobinController(RedditController):
     def GET_room_assignment(self, responder):
         room = RobinRoom.get_room_for_user(c.user)
         if room:
-            return {"roomId": room._id}
+            return {"roomId": room.id}
