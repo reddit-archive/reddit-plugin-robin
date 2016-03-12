@@ -23,7 +23,7 @@ from .pages import (
     RobinAll,
     RobinPage,
     RobinChatPage,
-    RobinHome,
+    RobinJoin,
     RobinChat,
 )
 from .models import RobinRoom
@@ -35,15 +35,14 @@ class RobinController(RedditController):
     @validate(
         VUser(),
     )
-    def GET_home(self):
+    def GET_join(self):
         room = RobinRoom.get_room_for_user(c.user)
         if room:
-            self.redirect("/robin/{room_id}".format(room_id=room.id))
-            return
+            return self.redirect("/robin")
 
         return RobinPage(
             title="robin",
-            content=RobinHome(),
+            content=RobinJoin(),
         ).render()
 
     @validate(
@@ -58,12 +57,14 @@ class RobinController(RedditController):
             content=RobinAll(),
         ).render()
 
-
     @validate(
         VUser(),
-        room=VRobinRoom("room_id"),
     )
-    def GET_chat(self, room):
+    def GET_chat(self):
+        room = RobinRoom.get_room_for_user(c.user)
+        if not room:
+            return self.redirect("/robin/join")
+
         path = posixpath.join("/robin", room.id, c.user._id36)
         websocket_url = websockets.make_url(path, max_age=3600)
 

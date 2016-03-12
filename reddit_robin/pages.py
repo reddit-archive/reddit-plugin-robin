@@ -26,7 +26,7 @@ class RobinChatPage(RobinPage):
     pass
 
 
-class RobinHome(Templated):
+class RobinJoin(Templated):
     pass
 
 
