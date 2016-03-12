@@ -1,6 +1,10 @@
+from datetime import datetime
 import math
 
+from pylons import app_globals as g
+
 from r2.lib.db import tdb_cassandra
+from r2.models import Account
 
 
 class RobinRoom(tdb_cassandra.UuidThing):
@@ -11,11 +15,24 @@ class RobinRoom(tdb_cassandra.UuidThing):
     _write_consistency_level = tdb_cassandra.CL.QUORUM
 
     _int_props = ('level')
-    _bool_props = ('is_alive')
+    _bool_props = (
+        'is_alive',
+        'is_abandoned',
+        'is_merged',
+    )
+    _date_props = (
+        'last_prompt_time',
+        'last_reap_time',
+    )
+    _defaults = dict(
+        is_alive=True,
+        is_abandoned=False,
+        is_merged=False,
+    )
 
     @classmethod
     def create(cls, level):
-        room = cls(is_alive=True, level=level)
+        room = cls(level=level)
         room._commit()
         return room
 
@@ -77,23 +94,34 @@ class RobinRoom(tdb_cassandra.UuidThing):
         vote = RoomVote(vote_type, confirmed)
         ParticipantVoteByRoom.set_vote(self, user, vote)
 
-    def destroy(self, reason):
+    def abandon(self):
+        self.last_reap_time = datetime.now(g.tz)
         self.is_alive = False
-        self.reason = reason
+        self.is_abandoned = True
+        self._commit()
+
+    def continu(self):
+        self.last_reap_time = datetime.now(g.tz)
         self._commit()
 
     @classmethod
     def merge(cls, room1, room2):
         new_room_level = max([room1.level, room2.level]) + 1
-        all_participant_ids = (room1.get_all_participants() +
+        all_participant_ids = (room1.get_all_participants() |
             room2.get_all_participants())
         all_participants = Account._byID(
             all_participant_ids, data=True, return_dict=False)
 
         new_room = cls.create(level=new_room_level)
         new_room.add_participants(all_participants)
-        room1.destroy(reason="INCREASE")
-        room2.destroy(reason="INCREASE")
+
+        for room in (room1, room2):
+            room.last_reap_time = datetime.now(g.tz)
+            room.is_alive = False
+            room.is_merged = True
+            room.next_room = new_room.id
+            room._commit()
+
         return new_room
 
     @classmethod
@@ -110,8 +138,35 @@ class RobinRoom(tdb_cassandra.UuidThing):
     def generate_all_rooms(cls):
         for rowkey, columns in cls._cf.get_range():
             room = cls._byID(rowkey)
+            yield room
+
+    @classmethod
+    def generate_alive_rooms(cls):
+        for room in cls.generate_all_rooms():
             if room.is_alive:
                 yield room
+
+    @classmethod
+    def generate_rooms_for_prompting(cls, cutoff):
+        """Return all rooms that are alive and were not prompted recently"""
+        for room in cls.generate_alive_rooms():
+            if getattr(room, "last_prompt_time", room.date) < cutoff:
+                yield room
+
+    def mark_prompted(self):
+        self.last_prompt_time = datetime.now(g.tz)
+        self._commit()
+
+    @classmethod
+    def generate_rooms_for_reaping(cls, cutoff):
+        """Return all rooms that should be reaped"""
+        for room in cls.generate_alive_rooms():
+            if getattr(room, "last_reap_time", room.date) < cutoff:
+                yield room
+
+    def mark_reaped(self):
+        self.last_reap_time = datetime.now(g.tz)
+        self._commit()
 
 
 class RoomVote(object):
@@ -296,21 +351,17 @@ class RoomsByParticipant(tdb_cassandra.View):
 
 def populate():
     from r2.models.account import Account, register, AccountExists
-    users = []
-    for name in ("test1", "test2", "test3"):
+    from reddit_robin.matchmaker import add_to_waitinglist
+
+    for name in ("test1", "test2", "test3", "test4", "test5", "test6", "test7", "test8"):
         try:
             a = register(name, "123456", registration_ip="127.0.0.1")
         except AccountExists:
             a = Account._by_name(name)
-        users.append(a)
+        add_to_waitinglist(a)
 
-    for _id in ("example_a", "example_b", "example_c"):
-        room = RobinRoom.create(_id=_id, level=0)
-        if _id == "example_a":
-            room.add_participants(users)
 
 def clear_all():
-    from pylons import app_globals as g
     g.cache.delete("current_robin_room")
     for cls in (RobinRoom, ParticipantVoteByRoom, ParticipantPresenceByRoom,
                 RoomsByParticipant):
