@@ -378,15 +378,17 @@ class RoomsByParticipant(tdb_cassandra.View):
         return room_id
 
 
-def populate():
+def populate(num_users=16384):
     from r2.models.account import Account, register, AccountExists
     from reddit_robin.matchmaker import add_to_waitinglist
 
-    for name in ("test1", "test2", "test3", "test4", "test5", "test6", "test7", "test8"):
+    for i in xrange(num_users):
+        name = "test%s" % i
         try:
             a = register(name, "123456", registration_ip="127.0.0.1")
         except AccountExists:
             a = Account._by_name(name)
+        print "added %s" % a
         add_to_waitinglist(a)
 
 
