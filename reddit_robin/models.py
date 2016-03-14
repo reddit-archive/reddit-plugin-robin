@@ -158,6 +158,7 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
     of users that belong to a room."""
     _use_db = True
     _connection_pool = 'main'
+    _fetch_all_columns = True
     _extra_schema_creation_args = dict(
         key_validation_class=tdb_cassandra.TIME_UUID_TYPE,
     )
@@ -226,6 +227,7 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
 class ParticipantPresenceByRoom(tdb_cassandra.View):
     _use_db = True
     _connection_pool = 'main'
+    _fetch_all_columns = True
     _extra_schema_creation_args = dict(
         key_validation_class=tdb_cassandra.TIME_UUID_TYPE,
     )
