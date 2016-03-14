@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from pylons import app_globals as g
 
 from r2.lib import websockets
-from .models import RobinRoom
+from .models import RobinRoom, move_dead_rooms
 
 
 """
@@ -74,6 +74,8 @@ def reap_ripe_rooms(room_age_minutes=10):
     for level, orphaned_room in to_merge_by_level.iteritems():
         alert_no_match(orphaned_room)
     print "%s: done reaping (%s rooms took %s)" % (datetime.now(g.tz), count, datetime.now(g.tz) - now)
+
+    move_dead_rooms()
 
 
 def continue_room(room):

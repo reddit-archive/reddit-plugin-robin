@@ -4,6 +4,7 @@ from pylons import app_globals as g
 
 from r2.lib import amqp
 from r2.lib import websockets
+from r2.lib.db import tdb_cassandra
 from r2.models import Account
 
 from .models import RobinRoom
@@ -34,7 +35,11 @@ def run_waitinglist():
             if not current_room_id:
                 current_room = make_new_room()
             else:
-                current_room = RobinRoom._byID(current_room_id)
+                try:
+                    current_room = RobinRoom._byID(current_room_id)
+                except tdb_cassandra.NotFoundException:
+                    current_room_id = None
+                    current_room = make_new_room()
 
             current_room.add_participants([user])
             print "added %s to %s" % (user.name, current_room.id)

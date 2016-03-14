@@ -4,6 +4,7 @@ import posixpath
 from pylons import app_globals as g
 
 from r2.lib import amqp, websockets
+from r2.lib.db import tdb_cassandra
 from r2.models import Account
 
 from .models import ParticipantPresenceByRoom, RobinRoom
@@ -22,7 +23,10 @@ def run():
         room_namespace = posixpath.dirname(namespace)
 
         account = Account._byID36(user_id36, data=True)
-        room = RobinRoom._byID(room_namespace)
+        try:
+            room = RobinRoom._byID(room_namespace)
+        except tdb_cassandra.NotFoundException:
+            return
 
         if not room.is_participant(account):
             return
