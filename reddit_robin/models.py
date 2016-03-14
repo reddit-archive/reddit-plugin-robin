@@ -130,14 +130,18 @@ class RobinRoom(tdb_cassandra.UuidThing):
         if room_id is None:
             return
 
-        room = cls._byID(room_id)
+        try:
+            room = cls._byID(room_id)
+        except tdb_cassandra.NotFoundException:
+            return
+
         if room.is_alive and room.is_participant(user):
             return room
 
     @classmethod
     def generate_all_rooms(cls):
-        for rowkey, columns in cls._cf.get_range():
-            room = cls._byID(rowkey)
+        for _id, columns in cls._cf.get_range():
+            room = cls._from_serialized_columns(_id, columns)
             yield room
 
     @classmethod
@@ -167,6 +171,31 @@ class RobinRoom(tdb_cassandra.UuidThing):
     def mark_reaped(self):
         self.last_reap_time = datetime.now(g.tz)
         self._commit()
+
+
+class RobinRoomDead(RobinRoom):
+    """An exact copy of RobinRoom for storing dead rooms."""
+    _use_db = True
+    _type_prefix = "RobinRoomDead"
+
+
+def move_dead_rooms():
+    """Move dead rooms so that only live ones exist in RobinRoom.
+
+    This will ensure that get_range() style queries on the RobinRoom CF stay
+    as fast as possible.
+
+    """
+
+    count = 0
+    start = datetime.now(g.tz)
+    for _id, columns in RobinRoom._cf.get_range():
+        room = RobinRoom._from_serialized_columns(_id, columns)
+        if not room.is_alive:
+            RobinRoomOld._cf.insert(_id, columns)
+            RobinRoom._cf.remove(_id)
+            count += 1
+    print "moved %s rooms in %s" % (count, datetime.now(g.tz) - start)
 
 
 class RoomVote(object):
