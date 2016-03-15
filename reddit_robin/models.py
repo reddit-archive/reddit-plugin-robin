@@ -1,10 +1,13 @@
-from datetime import timedelta
-from uuid import uuid1
+from datetime import datetime
+import math
+
+from pylons import app_globals as g
 
 from r2.lib.db import tdb_cassandra
+from r2.models import Account
 
 
-class RobinRoom(tdb_cassandra.Thing):
+class RobinRoom(tdb_cassandra.UuidThing):
     _use_db = True
     _connection_pool = 'main'
 
@@ -12,21 +15,59 @@ class RobinRoom(tdb_cassandra.Thing):
     _write_consistency_level = tdb_cassandra.CL.QUORUM
 
     _int_props = ('level')
-    _bool_props = ('is_alive')
+    _bool_props = (
+        'is_alive',
+        'is_abandoned',
+        'is_merged',
+    )
+    _date_props = (
+        'last_prompt_time',
+        'last_reap_time',
+    )
+    _defaults = dict(
+        is_alive=True,
+        is_abandoned=False,
+        is_merged=False,
+    )
 
     @classmethod
-    def create(cls, _id, level):
-        try:
-            cls._byID(_id)
-        except tdb_cassandra.NotFound:
-            pass
-        else:
-            raise ValueError(
-                "{cls} {name} exists".format(cls=cls.__name__, name=_id))
-
-        room = cls(_id=_id, is_alive=True, level=level)
+    def create(cls, level):
+        room = cls(level=level)
         room._commit()
         return room
+
+    @classmethod
+    def make_room_name(cls, pieces):
+        room_name = ""
+        num_pieces = len(pieces)
+        for i, piece in enumerate(pieces):
+            len_piece = len(piece)
+            chunk_size = max(2, int(math.ceil(len_piece / float(num_pieces))))
+            chunk_position = i / float(num_pieces)
+            chunk_head = int(chunk_position * len_piece)
+            chunk_tail = chunk_head + chunk_size
+            if chunk_tail > len_piece:
+                chunk_tail = len_piece
+                chunk_head = chunk_tail - chunk_size
+            chunk = piece[chunk_head:chunk_tail]
+            room_name += chunk
+        return room_name
+
+    @property
+    def id(self):
+        """Convert UUID to string"""
+        return str(self._id)
+
+    @property
+    def name(self):
+        if hasattr(self, "_name"):
+            return self._name
+
+        user_ids = self.get_all_participants()
+        users = Account._byID(user_ids, data=True, return_dict=False)
+        user_names = [user.name for user in users]
+        self._name = self.make_room_name(user_names)
+        return self._name
 
     def add_participants(self, users):
         ParticipantVoteByRoom.add_participants(self, users)
@@ -53,24 +94,34 @@ class RobinRoom(tdb_cassandra.Thing):
         vote = RoomVote(vote_type, confirmed)
         ParticipantVoteByRoom.set_vote(self, user, vote)
 
-    def destroy(self, reason):
+    def abandon(self):
+        self.last_reap_time = datetime.now(g.tz)
         self.is_alive = False
-        self.reason = reason
+        self.is_abandoned = True
+        self._commit()
+
+    def continu(self):
+        self.last_reap_time = datetime.now(g.tz)
         self._commit()
 
     @classmethod
     def merge(cls, room1, room2):
-        new_room_id = room1._id + room2._id
         new_room_level = max([room1.level, room2.level]) + 1
-        all_participant_ids = (room1.get_all_participants() +
+        all_participant_ids = (room1.get_all_participants() |
             room2.get_all_participants())
         all_participants = Account._byID(
             all_participant_ids, data=True, return_dict=False)
 
-        new_room = cls.create(_id=new_room_id, level=new_room_level)
+        new_room = cls.create(level=new_room_level)
         new_room.add_participants(all_participants)
-        room1.destroy(reason="INCREASE")
-        room2.destroy(reason="INCREASE")
+
+        for room in (room1, room2):
+            room.last_reap_time = datetime.now(g.tz)
+            room.is_alive = False
+            room.is_merged = True
+            room.next_room = new_room.id
+            room._commit()
+
         return new_room
 
     @classmethod
@@ -79,16 +130,72 @@ class RobinRoom(tdb_cassandra.Thing):
         if room_id is None:
             return
 
-        room = cls._byID(room_id)
+        try:
+            room = cls._byID(room_id)
+        except tdb_cassandra.NotFoundException:
+            return
+
         if room.is_alive and room.is_participant(user):
             return room
 
     @classmethod
     def generate_all_rooms(cls):
-        for rowkey, columns in cls._cf.get_range():
-            room = cls._byID(rowkey)
+        for _id, columns in cls._cf.get_range():
+            room = cls._from_serialized_columns(_id, columns)
+            yield room
+
+    @classmethod
+    def generate_alive_rooms(cls):
+        for room in cls.generate_all_rooms():
             if room.is_alive:
                 yield room
+
+    @classmethod
+    def generate_rooms_for_prompting(cls, cutoff):
+        """Return all rooms that are alive and were not prompted recently"""
+        for room in cls.generate_alive_rooms():
+            if getattr(room, "last_prompt_time", room.date) < cutoff:
+                yield room
+
+    def mark_prompted(self):
+        self.last_prompt_time = datetime.now(g.tz)
+        self._commit()
+
+    @classmethod
+    def generate_rooms_for_reaping(cls, cutoff):
+        """Return all rooms that should be reaped"""
+        for room in cls.generate_alive_rooms():
+            if getattr(room, "last_reap_time", room.date) < cutoff:
+                yield room
+
+    def mark_reaped(self):
+        self.last_reap_time = datetime.now(g.tz)
+        self._commit()
+
+
+class RobinRoomDead(RobinRoom):
+    """An exact copy of RobinRoom for storing dead rooms."""
+    _use_db = True
+    _type_prefix = "RobinRoomDead"
+
+
+def move_dead_rooms():
+    """Move dead rooms so that only live ones exist in RobinRoom.
+
+    This will ensure that get_range() style queries on the RobinRoom CF stay
+    as fast as possible.
+
+    """
+
+    count = 0
+    start = datetime.now(g.tz)
+    for _id, columns in RobinRoom._cf.get_range():
+        room = RobinRoom._from_serialized_columns(_id, columns)
+        if not room.is_alive:
+            RobinRoomOld._cf.insert(_id, columns)
+            RobinRoom._cf.remove(_id)
+            count += 1
+    print "moved %s rooms in %s" % (count, datetime.now(g.tz) - start)
 
 
 class RoomVote(object):
@@ -135,6 +242,10 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
     of users that belong to a room."""
     _use_db = True
     _connection_pool = 'main'
+    _fetch_all_columns = True
+    _extra_schema_creation_args = dict(
+        key_validation_class=tdb_cassandra.TIME_UUID_TYPE,
+    )
 
     _read_consistency_level = tdb_cassandra.CL.QUORUM
     _write_consistency_level = tdb_cassandra.CL.QUORUM
@@ -149,7 +260,7 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
         vote = RoomVote("NOVOTE", confirmed=False)
         column_value = vote.to_string()
         columns = {user._id36: column_value for user in users}
-        cls._set_values(rowkey, columns)
+        cls._cf.insert(rowkey, columns)
 
     @classmethod
     def get_all_participant_ids(cls, room):
@@ -194,12 +305,16 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
         rowkey = cls._rowkey(room)
         column_value = vote.to_string()
         columns = {user._id36: column_value}
-        cls._set_values(rowkey, columns)
+        cls._cf.insert(rowkey, columns)
 
 
 class ParticipantPresenceByRoom(tdb_cassandra.View):
     _use_db = True
     _connection_pool = 'main'
+    _fetch_all_columns = True
+    _extra_schema_creation_args = dict(
+        key_validation_class=tdb_cassandra.TIME_UUID_TYPE,
+    )
 
     _read_consistency_level = tdb_cassandra.CL.QUORUM
     _write_consistency_level = tdb_cassandra.CL.QUORUM
@@ -214,13 +329,13 @@ class ParticipantPresenceByRoom(tdb_cassandra.View):
     def mark_joined(cls, room, user):
         rowkey = cls._rowkey(room)
         columns = {user._id36: ""}
-        cls._set_values(rowkey, columns)
+        cls._cf.insert(rowkey, columns)
 
     @classmethod
     def mark_exited(cls, room, user):
         rowkey = cls._rowkey(room)
         columns = {user._id36: ""}
-        cls._remove(rowkey, columns)
+        cls._cf.remove(rowkey, columns)
 
     @classmethod
     def get_present_user_ids(cls, room):
@@ -246,7 +361,7 @@ class RoomsByParticipant(tdb_cassandra.View):
 
     @classmethod
     def add_users_to_room(cls, users, room):
-        column = {uuid1(): room._id}
+        column = {room._id: ""}
         with cls._cf.batch() as b:
             for user in users:
                 rowkey = cls._rowkey(user)
@@ -259,27 +374,23 @@ class RoomsByParticipant(tdb_cassandra.View):
             d = cls._cf.get(rowkey, column_count=1, column_reversed=True)
         except tdb_cassandra.NotFoundException:
             return None
-        room_id = d.values()[0]
+        room_id = d.keys()[0]
         return room_id
 
 
 def populate():
     from r2.models.account import Account, register, AccountExists
-    users = []
-    for name in ("test1", "test2", "test3"):
+    from reddit_robin.matchmaker import add_to_waitinglist
+
+    for name in ("test1", "test2", "test3", "test4", "test5", "test6", "test7", "test8"):
         try:
             a = register(name, "123456", registration_ip="127.0.0.1")
         except AccountExists:
             a = Account._by_name(name)
-        users.append(a)
+        add_to_waitinglist(a)
 
-    for _id in ("example_a", "example_b", "example_c"):
-        room = RobinRoom.create(_id=_id, level=0)
-        if _id == "example_a":
-            room.add_participants(users)
 
 def clear_all():
-    from pylons import app_globals as g
     g.cache.delete("current_robin_room")
     for cls in (RobinRoom, ParticipantVoteByRoom, ParticipantPresenceByRoom,
                 RoomsByParticipant):

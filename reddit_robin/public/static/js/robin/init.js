@@ -37,6 +37,29 @@
       'message:part': function(message) {
         this.addSystemMessage(message.user + ' has left the room');
       },
+
+      'message:please_vote': function(message) {
+        this.addSystemMessage('polls are closing soon, please vote');
+      },
+
+      'message:merge': function(message) {
+        this.addSystemMessage('merging with other room...');
+        // TODO: add some jitter before refresh to avoid thundering herd
+        $.refresh()
+      },
+
+      'message:abandon': function(message) {
+        this.addSystemMessage('room has been abandoned');
+      },
+
+      'message:continue': function(message) {
+        this.addSystemMessage('room has been continued');
+      },
+
+      'message:no_match': function(message) {
+        this.addSystemMessage('no compatible room found for matching');
+      },
+
     },
 
     roomEvents: {
@@ -138,6 +161,7 @@
       // initialize some models for managing state
       this.room = new models.RobinRoom({
         room_id: this.options.room_id,
+        room_name: this.options.room_name,
       });
 
       this.systemUser = new models.RobinUser({
@@ -284,6 +308,7 @@
   $(function() {
     new RobinChat({
       el: document.getElementById('robinChat'),
+      room_name: r.config.robin_room_name,
       room_id: r.config.robin_room_id,
       websocket_url: r.config.robin_websocket_url,
       participants: r.config.robin_user_list,

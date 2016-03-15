@@ -1,7 +1,17 @@
-<h1>robin</h1>
+<h1>robin (${len(thing.participants_by_room)} rooms)</h1>
 
 <ul>
-  %for room_name in thing.all_rooms:
-    <li>${room_name}</li>
+  %for room_id, participants in thing.participants_by_room.iteritems():
+    <li>
+      <%
+        if len(participants) > 32:
+          name_str = ', '.join(user.name for user in participants[:32])
+          name_str += ', ...'
+          name_str += ' (%s total)' % len(participants)
+        else:
+          name_str = ', '.join(user.name for user in participants)
+      %>
+      <a href="/robin/${room_id}">${room_id}</a>: ${name_str}
+    </li>
   %endfor
 </ul>
