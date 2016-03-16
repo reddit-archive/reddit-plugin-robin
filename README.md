@@ -27,3 +27,18 @@ Then, re-run the reddit installation script:
 cd ~/src/reddit
 sudo ./install-reddit.sh
 ```
+
+Then, copy the upstart scripts:
+
+```bash
+sudo cp ~/src/robin/upstart/* /etc/init/
+```
+
+Then, enable the consumers:
+
+```bash
+cd ~/consumer-counts.d
+echo 1 > robin_presence_q
+echo 1 > robin_waitinglist_q
+sudo initctl emit reddit-start
+```
