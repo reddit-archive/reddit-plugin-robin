@@ -20,3 +20,10 @@ Then add the plugin to your ini file:
 -plugins = about, liveupdate
 +plugins = about, liveupdate, robin
 ```
+
+Then, re-run the reddit installation script:
+
+```bash
+cd ~/src/reddit
+sudo ./install-reddit.sh
+```
