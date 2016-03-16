@@ -54,7 +54,8 @@
     ],
 
     defaults: {
-      'message': '',
+      message: '',
+      author: '',
     },
   });
 
@@ -113,6 +114,11 @@
 
   var RobinRoomParticipants = Backbone.Collection.extend({
     model: RobinUser,
+  });
+
+
+  var RobinRoomMessages = Backbone.Collection.extend({
+    model: RobinMessage,
   });
 
 
@@ -198,6 +204,7 @@
     RobinUser: RobinUser,
     RobinMessage: RobinMessage,
     RobinRoomParticipants: RobinRoomParticipants,
+    RobinRoomMessages: RobinRoomMessages,
     RobinVote: RobinVote,
     RobinRoom: RobinRoom,
   };

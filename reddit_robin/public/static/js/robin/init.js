@@ -93,6 +93,14 @@
       },
     },
 
+    roomMessagesEvents: {
+      add: function(message, messageList) {
+        var userName = message.get('author');
+        var user = this._ensureUser(userName, { present: true });
+        this.chatWindow.addMessage(user, message);
+      },
+    },
+
     chatInputEvents: {
       'chat:message': function(messageText) {
         this.room.postMessage(messageText);
@@ -203,6 +211,7 @@
 
       this.currentUser = currentUser;
       this.roomParticipants = new models.RobinRoomParticipants(participants);
+      this.roomMessages = new models.RobinRoomMessages();
 
       // initialize some child views 
       this.chatInput = new views.RobinChatInput({
@@ -234,6 +243,7 @@
       // wire up events
       this._listenToEvents(this.room, this.roomEvents);
       this._listenToEvents(this.roomParticipants, this.roomParticipantsEvents);
+      this._listenToEvents(this.roomMessages, this.roomMessagesEvents);
       this._listenToEvents(this.chatInput, this.chatInputEvents);
       this._listenToEvents(this.voteWidget, this.voteWidgetEvents);
 
@@ -258,6 +268,10 @@
     },
 
     _ensureUser: function(userName, setAttrs) {
+      if (userName === this.systemUser.get('name')) {
+        return this.systemUser;
+      }
+      
       var user = this.roomParticipants.get(userName);
 
       if (!user) {
@@ -273,20 +287,21 @@
     },
 
     addChatMessage: function(userName, messageText) {
-      var user = this._ensureUser(userName, { present: true });
       var message = new models.RobinMessage({
+        author: userName,
         message: messageText,
       });
 
-      this.chatWindow.addMessage(user, message);
+      this.roomMessages.add(message);
     },
 
     addSystemMessage: function(messageText) {
       var message = new models.RobinMessage({
+        author: this.systemUser.get('name'),
         message: messageText,
       });
 
-      this.chatWindow.addMessage(this.systemUser, message);
+      this.roomMessages.add(message);
     },
 
     updateUserVote: function(userName, vote, confirmed) {
