@@ -240,6 +240,18 @@
         this.voteWidget.setConfirmedState();
       }
 
+      // notifications
+      if ('Notification' in window) {
+        this.desktopNotifier = new r.robin.notifications.DesktopNotifier({
+          model: this.roomMessages,
+        });
+        this.desktopNotifier.render();
+        $('#robinDesktopNotifier')
+          .removeAttr('hidden')
+          .find('label')
+          .prepend(this.desktopNotifier.$el);
+      }
+
       // wire up events
       this._listenToEvents(this.room, this.roomEvents);
       this._listenToEvents(this.roomParticipants, this.roomParticipantsEvents);
