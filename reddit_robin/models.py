@@ -86,12 +86,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
     def get_all_votes(self):
         return ParticipantVoteByRoom.get_all_votes(self)
 
-    def change_vote(self, user, vote_type, confirmed):
-        original_vote = ParticipantVoteByRoom.get_vote(self, user)
-        if original_vote.confirmed:
-            raise ValueError("can't change confirmed vote")
-
-        vote = RoomVote(vote_type, confirmed)
+    def set_vote(self, user, vote):
         ParticipantVoteByRoom.set_vote(self, user, vote)
 
     def abandon(self):
@@ -198,43 +193,11 @@ def move_dead_rooms():
     print "moved %s rooms in %s" % (count, datetime.now(g.tz) - start)
 
 
-class RoomVote(object):
-    VALID_VOTES = {
-        ("NOVOTE", False),
-        ("INCREASE", False),
-        ("INCREASE", True),
-        ("CONTINUE", False),
-        ("CONTINUE", True),
-        ("ABANDON", False),
-        ("ABANDON", True),
-    }
-
-    def __init__(self, name, confirmed):
-        assert (name, confirmed) in self.VALID_VOTES
-
-        self.name = name
-        self.confirmed = confirmed
-
-    def to_string(self):
-        return "{name}{other}".format(
-            name=self.name,
-            other="_LOCKED" if self.confirmed else "",
-        )
-
-    @classmethod
-    def from_string(cls, s):
-        name, sep, locked = s.partition("_")
-        confirmed = locked == "LOCKED"
-        vote = cls(name, confirmed)
-        return vote
-
-    def __repr__(self):
-        cls_name = self.__class__.__name__
-        return "<{cls} {name} ({confirmed})>".format(
-            cls=cls_name,
-            name=self.name,
-            confirmed="confirmed" if self.confirmed else "unconfirmed",
-        )
+NOVOTE = "NOVOTE"
+INCREASE = "INCREASE"
+CONTINUE = "CONTINUE"
+ABANDON = "ABANDON"
+VALID_VOTES = (INCREASE, CONTINUE, ABANDON)
 
 
 class ParticipantVoteByRoom(tdb_cassandra.View):
@@ -257,9 +220,8 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
     @classmethod
     def add_participants(cls, room, users):
         rowkey = cls._rowkey(room)
-        vote = RoomVote("NOVOTE", confirmed=False)
-        column_value = vote.to_string()
-        columns = {user._id36: column_value for user in users}
+        vote = NOVOTE
+        columns = {user._id36: vote for user in users}
         cls._cf.insert(rowkey, columns)
 
     @classmethod
@@ -278,14 +240,15 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
         try:
             d = cls._cf.get(rowkey, columns=[user._id36])
         except tdb_cassandra.NotFoundException:
+            # the user doesn't belong to the room
             return None
 
         try:
-            column_value = d[user._id36]
+            vote = d[user._id36]
+            return vote
         except KeyError:
+            # the user doesn't belong to the room
             return None
-
-        return RoomVote.from_string(column_value)
 
     @classmethod
     def get_all_votes(cls, room):
@@ -296,15 +259,14 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
             return {}
 
         ret = {}
-        for user_id36, vote_str in obj._t.iteritems():
-            ret[int(user_id36, 36)] = RoomVote.from_string(vote_str)
+        for user_id36, vote in obj._t.iteritems():
+            ret[int(user_id36, 36)] = vote
         return ret
 
     @classmethod
     def set_vote(cls, room, user, vote):
         rowkey = cls._rowkey(room)
-        column_value = vote.to_string()
-        columns = {user._id36: column_value}
+        columns = {user._id36: vote}
         cls._cf.insert(rowkey, columns)
 
 
