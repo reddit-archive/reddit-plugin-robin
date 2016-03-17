@@ -252,6 +252,11 @@
           .prepend(this.desktopNotifier.$el);
       }
 
+      // favicon
+      this.faviconUpdater = new r.robin.favicon.UnreadUpdateCounter({
+        model: this.roomMessages,
+      });
+
       // wire up events
       this._listenToEvents(this.room, this.roomEvents);
       this._listenToEvents(this.roomParticipants, this.roomParticipantsEvents);

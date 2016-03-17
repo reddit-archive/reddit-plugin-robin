@@ -16,6 +16,7 @@ class Robin(Plugin):
     js = {
         "robin": LocalizedModule("robin.js",
             "lib/page-visibility.js",
+            "lib/tinycon.js",
             "websocket.js",
             TemplateFileSource("robin/robinmessage.html"),
             TemplateFileSource("robin/robinroomparticipant.html"),
@@ -24,6 +25,7 @@ class Robin(Plugin):
             "robin/models.js",
             "robin/views.js",
             "robin/notifications.js",
+            "robin/favicon.js",
             "robin/init.js",
         ),
 
