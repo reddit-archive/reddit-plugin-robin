@@ -73,6 +73,10 @@ class RobinRoom(tdb_cassandra.UuidThing):
         ParticipantVoteByRoom.add_participants(self, users)
         RoomsByParticipant.add_users_to_room(users, self)
 
+    def remove_participants(self, users):
+        ParticipantVoteByRoom.remove_participants(self, users)
+        RoomsByParticipant.remove_users_from_room(users, self)
+
     def is_participant(self, user):
         vote = ParticipantVoteByRoom.get_vote(self, user)
         return bool(vote)
@@ -225,6 +229,12 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
         cls._cf.insert(rowkey, columns)
 
     @classmethod
+    def remove_participants(cls, room, users):
+        rowkey = cls._rowkey(room)
+        columns = {user._id36: "" for user in users}
+        cls._cf.remove(rowkey, columns)
+
+    @classmethod
     def get_all_participant_ids(cls, room):
         rowkey = cls._rowkey(room)
         try:
@@ -328,6 +338,14 @@ class RoomsByParticipant(tdb_cassandra.View):
             for user in users:
                 rowkey = cls._rowkey(user)
                 b.insert(rowkey, column)
+
+    @classmethod
+    def remove_users_from_room(cls, users, room):
+        column = {room._id: ""}
+        with cls._cf.batch() as b:
+            for user in users:
+                rowkey = cls._rowkey(user)
+                b.remove(rowkey, column)
 
     @classmethod
     def get_room_id(cls, user):

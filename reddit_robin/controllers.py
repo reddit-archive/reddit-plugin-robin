@@ -1,5 +1,6 @@
 import posixpath
 
+from pylons import app_globals as g
 from pylons import tmpl_context as c
 
 from r2.controllers import add_controller
@@ -186,6 +187,16 @@ class RobinController(RedditController):
             return
 
         add_to_waitinglist(c.user)
+
+    @validatedForm(
+        VUser(),
+        VModhash(),
+    )
+    def POST_leave_room(self, form, jquery):
+        room = RobinRoom.get_room_for_user(c.user)
+        if not room:
+            return
+        room.remove_participants([c.user])
 
     @json_validate(VUser())
     def GET_room_assignment(self, responder):
