@@ -151,23 +151,12 @@ class RobinRoom(tdb_cassandra.UuidThing):
             if room.is_alive and not room.is_continued:
                 yield room
 
-    @classmethod
-    def generate_rooms_for_prompting(cls, cutoff):
-        """Return all rooms that are alive and were not prompted recently"""
-        for room in cls.generate_voting_rooms():
-            if getattr(room, "last_prompt_time", room.date) < cutoff:
-                yield room
+    def has_prompted(self):
+        return True if getattr(self, 'last_prompt_time', False) else False
 
     def mark_prompted(self):
         self.last_prompt_time = datetime.now(g.tz)
         self._commit()
-
-    @classmethod
-    def generate_rooms_for_reaping(cls, cutoff):
-        """Return all rooms that should be reaped"""
-        for room in cls.generate_voting_rooms():
-            if getattr(room, "last_reap_time", room.date) < cutoff:
-                yield room
 
     def mark_reaped(self):
         self.last_reap_time = datetime.now(g.tz)
@@ -362,11 +351,11 @@ class RoomsByParticipant(tdb_cassandra.View):
             return room_id
 
 
-def populate(num_users=16384):
+def populate(start=0, num_users=16384):
     from r2.models.account import Account, register, AccountExists
     from reddit_robin.matchmaker import add_to_waitinglist
 
-    for i in xrange(num_users):
+    for i in xrange(start, num_users):
         name = "test%s" % i
         try:
             a = register(name, "123456", registration_ip="127.0.0.1")

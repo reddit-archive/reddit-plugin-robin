@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 from pylons import app_globals as g
@@ -14,6 +15,20 @@ from .models import (
 )
 
 
+# We do this on a 2 minute interval, since reaping and vote alerting is done
+# every minute.  This should guarantee a warning at least 1 minute before
+# each room is reaped.  This could still be a problem if the overall loop time
+# is bigger than a minute.
+VOTING_PROMPT_TIME = timedelta(minutes=2)
+
+# How long each room will last at each level before merging happens.
+DEFAULT_LEVEL_TIME = timedelta(minutes=15)
+LEVEL_TIMINGS = defaultdict(lambda: DEFAULT_LEVEL_TIME)
+LEVEL_TIMINGS.update({
+    0: timedelta(minutes=5),
+})
+
+
 """
 reaping happens every 15 minutes
 5 minutes before the reaping we will prompt each room to vote
@@ -21,22 +36,27 @@ reaping happens every 15 minutes
 doing it on a fixed schedule like this will put all rooms in sync rather than
 having them age in reference from their creation date. this simplifies the merging.
 
-Update your cron (for local installs):
-/etc/cron.d/reddit
-*/15 * * * * root /sbin/start --quiet reddit-job-robin_reap_ripe_rooms
-10-59/15 * * * * root /sbin/start --quiet reddit-job-robin_prompt_for_voting
-
-
 """
 
 
-def prompt_for_voting(room_age_minutes=6):
+def prompt_for_voting():
     now = datetime.now(g.tz)
-    alert_older_than = now - timedelta(minutes=room_age_minutes)
-    print "%s: prompting rooms older than %s" % (now, alert_older_than)
+    print "%s: prompting voting in rooms with less than %s remaining" % (
+        now, VOTING_PROMPT_TIME)
 
     count = 0
-    for room in RobinRoom.generate_rooms_for_prompting(cutoff=alert_older_than):
+    for room in RobinRoom.generate_voting_rooms():
+
+        # Skip if we've already prompted
+        if room.has_prompted():
+            continue
+
+        # Skip this room if too much time still remains
+        alert_after = room.date + (LEVEL_TIMINGS[room.level] -
+                                   VOTING_PROMPT_TIME)
+        if now < alert_after:
+            continue
+
         count += 1
         websockets.send_broadcast(
             namespace="/robin/" + room.id,
@@ -45,10 +65,11 @@ def prompt_for_voting(room_age_minutes=6):
         )
         room.mark_prompted()
         print "prompted %s" % room
-    print "%s: done prompting (%s rooms took %s)" % (datetime.now(g.tz), count, datetime.now(g.tz) - now)
+    print "%s: done prompting (%s rooms took %s)" % (
+        datetime.now(g.tz), count, datetime.now(g.tz) - now)
 
 
-def reap_ripe_rooms(room_age_minutes=10):
+def reap_ripe_rooms():
     """Apply voting decision to each room.
 
     Users can vote to:
@@ -61,23 +82,29 @@ def reap_ripe_rooms(room_age_minutes=10):
     In case of ties precedence is abandon > continue > increase
 
     """
-
     now = datetime.now(g.tz)
-    reap_older_than = now - timedelta(minutes=room_age_minutes)
-    print "%s: reaping rooms older than %s" % (now, reap_older_than)
 
     to_merge_by_level = {}
     count = 0
-    for room in RobinRoom.generate_rooms_for_reaping(cutoff=reap_older_than):
+    for room in RobinRoom.generate_voting_rooms():
+
+        # The room isn't old enough to be merged yet
+        age = now - room.date
+        if age < LEVEL_TIMINGS[room.level]:
+            continue
+
+        print "%s: attempting to merge room %s with age %s" % (
+            datetime.now(g.tz), room, age)
+
         count += 1
+
+        # Calculate votes
         votes_by_user = room.get_all_votes()
         votes = votes_by_user.values()
-
         abandoning_user_ids = {
             _id for _id, vote in votes_by_user.iteritems()
             if vote == ABANDON or vote == NOVOTE
         }
-
         num_increase = sum(1 for vote in votes if vote == INCREASE)
         num_continue = sum(1 for vote in votes if vote == CONTINUE)
         num_abandon = len(abandoning_user_ids)

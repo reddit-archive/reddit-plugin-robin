@@ -42,3 +42,9 @@ echo 1 > robin_presence_q
 echo 1 > robin_waitinglist_q
 sudo initctl emit reddit-start
 ```
+
+Finally, enable the cron jobs:
+
+```bash
+sudo cp ~/src/robin/cron.d/* /etc/cron.d/
+```
