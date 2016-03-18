@@ -33,7 +33,7 @@
       },
 
       'message:vote': function(message) {
-        this.updateUserVote(message.from, message.vote, message.confirmed);
+        this.updateUserVote(message.from, message.vote);
       },
 
       'message:join': function(message) {
@@ -120,11 +120,6 @@
       'vote': function(vote) {
         this.room.postVote(vote.toUpperCase());
       },
-
-      'confirm': function() {
-        var vote = this.currentUser.get('vote');
-        this.room.postVote(vote, true);
-      },
     },
 
     chatCommands: {
@@ -133,29 +128,13 @@
       },
 
       'vote': function(vote) {
-        if (!this.currentUser.canVote()) {
-          this.addSystemMessage('you have already confirmed your vote of ' + this.currentUser.get('vote'));
-        } else if (!vote) {
+        if (!vote) {
           this.addSystemMessage('use: /vote [' + r.robin.VOTE_TYPES.join(',') + ']');
         } else if (r.robin.VOTE_TYPES.indexOf(vote.toUpperCase()) < 0) {
           this.addSystemMessage('that is not a valid vote type');
         } else {
           this.room.postVote(vote.toUpperCase());
           this.voteWidget.setActiveVote(vote);
-        }
-      },
-
-      'confirm': function() {
-        var vote = this.currentUser.get('vote');
-        var confirmed = this.currentUser.get('confirmed');
-
-        if (this.currentUser.canConfirm()) {
-          this.room.postVote(vote, true);
-          this.voteWidget.setConfirmedState();
-        } else if (confirmed) {
-          this.addSystemMessage('you have already confirmed your vote of ' + vote);
-        } else {
-          this.addSystemMessage('you have not voted yet');
         }
       },
 
@@ -234,12 +213,8 @@
       });
 
       // set the button state in the voting widget
-      if (this.currentUser.canConfirm() || this.currentUser.isConfirmed()) {
+      if (this.currentUser.hasVoted()) {
         this.voteWidget.setActiveVote(this.currentUser.get('vote'));
-      }
-
-      if (this.currentUser.isConfirmed()) {
-        this.voteWidget.setConfirmedState();
       }
 
       // notifications
@@ -347,19 +322,14 @@
       this.roomMessages.add(message);
     },
 
-    updateUserVote: function(userName, vote, confirmed) {
+    updateUserVote: function(userName, vote) {
       var setAttrs = {
         vote: vote,
-        confirmed: confirmed,
         present: true,
       };
       var user = this._ensureUser(userName, setAttrs);
 
-      if (confirmed) {
-        this.addUserAction(userName, 'confirmed their vote to ' + vote);
-      } else {
-        this.addUserAction(userName, 'voted to ' + vote);
-      }
+      this.addUserAction(userName, 'voted to ' + vote);
     },
   });
 

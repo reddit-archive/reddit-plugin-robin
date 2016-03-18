@@ -70,12 +70,10 @@
   var RobinVote = _RobinModel.extend({
     validators: [
       OneOf('vote', VOTE_TYPES),
-      IsBool('confirmed'),
     ],
 
     defaults: {
       vote: NO_VOTE_TYPE,
-      confirmed: false,
     },
   });
 
@@ -87,7 +85,6 @@
       IsString('name'),
       OneOf('userClass', USER_CLASSES),
       OneOf('vote', VOTE_TYPES),
-      IsBool('confirmed'),
       IsBool('present'),
     ],
 
@@ -95,20 +92,12 @@
       name: null,
       userClass: DEFAULT_USER_CLASS,
       vote: NO_VOTE_TYPE,
-      confirmed: false,
       present: false,
     },
 
-    isConfirmed: function() {
-      return this.get('confirmed');
-    },
-
-    canVote: function() {
-      return !this.isConfirmed();
-    },
-
-    canConfirm: function() {
-      return this.canVote() && this.get('vote') !== NO_VOTE_TYPE;
+    
+    hasVoted: function() {
+      return this.get('vote') !== NO_VOTE_TYPE;
     },
 
     set: function(attrs, options) {
@@ -152,10 +141,9 @@
 
     },
 
-    postVote: function(voteType, voteConfirmed) {
+    postVote: function(voteType) {
       var vote = new RobinVote({
         vote: voteType,
-        confirmed: voteConfirmed,
       });
 
       var err = vote.validate();

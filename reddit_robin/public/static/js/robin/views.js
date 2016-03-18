@@ -77,45 +77,23 @@
 
   var RobinVoteWidget = Backbone.View.extend({
     ACTIVE_STATE_CLASS: 'robin--active',
-    CONFIRM_BUTTON_CLASS: 'robin-chat--confirm',
     VOTE_BUTTON_CLASS: 'robin-chat--vote',
-    CONFIRMED_STATE_CLASS: 'robin--vote-confirmed',
 
     currentTarget: null,
 
     events: {
       'click .robin-chat--vote': '_onVote',
-      'click .robin-chat--confirm': '_onConfirm',
-    },
-
-    initialize: function() {
-      this._confirmed = false;
     },
 
     _onVote: function(e) {
-      if (this._confirmed) {
-        e.target.blur();
-        return;
-      }
-
       var value = e.target.value;
       this.trigger('vote', value);
       this._setActiveTarget(e.target);
     },
 
-    _onConfirm: function(e) {
-      if (!this.currentTarget) { return; }
-      if (this._confirmed) { return; }
-
-      this.trigger('confirm');
-      this.setConfirmedState();
-    },
-
     _setActiveTarget: function(el) {
       if (this.currentTarget) {
         $(this.currentTarget).removeClass(this.ACTIVE_STATE_CLASS);
-      } else {
-        this.$el.find('.' + this.CONFIRM_BUTTON_CLASS).removeAttr('disabled');
       }
 
       if (el) {
@@ -124,22 +102,7 @@
       }
     },
 
-    setConfirmedState: function() {
-      if (this._confirmed) {
-        throw new Error('RobinVoteWidget: cannot set confirmed state, vote is already confirmed');
-      }
-
-      this.$el.find('.' + this.CONFIRM_BUTTON_CLASS).addClass(this.ACTIVE_STATE_CLASS);
-      this.$el.addClass(this.CONFIRMED_STATE_CLASS);
-      this._confirmed = true;
-      this.$el.find('button').attr('disabled', true);
-    },
-
     setActiveVote: function(voteType) {
-      if (this._confirmed) {
-        throw new Error('RobinVoteWidget: channot change active vote, vote is already confirmed');
-      }
-
       var selector = '.' + this.VOTE_BUTTON_CLASS + '-' + voteType.toLowerCase();
       var el = this.$el.find(selector)[0];
       this._setActiveTarget(el);
@@ -173,7 +136,6 @@
         from: user.get('name'),
         userClass: user.get('userClass'),
         voteClass: user.get('vote').toLowerCase(),
-        confirmClass: user.get('confirmed') ? 'confirmed' : 'unconfirmed',
         presenceClass: user.get('present') ? 'present' : 'away',
       };
       return r.templates.make(this.TEMPLATE_NAME, templateData);

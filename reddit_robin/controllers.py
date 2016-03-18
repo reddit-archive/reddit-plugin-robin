@@ -118,7 +118,6 @@ class RobinController(RedditController):
                 "name": user.name,
                 "present": user._id in all_present_ids,
                 "vote": vote,
-                "confirmed": False,
             });
 
         return RobinChatPage(
@@ -172,7 +171,6 @@ class RobinController(RedditController):
             payload={
                 "from": c.user.name,
                 "vote": vote,
-                "confirmed": False,
             },
         )
 
