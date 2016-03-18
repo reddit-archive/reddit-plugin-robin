@@ -5,25 +5,31 @@
   var views = r.robin.views;
 
   var RobinChat = Backbone.View.extend({
+    SYSTEM_USER_NAME: '[robin]',
+
     websocketEvents: {
       'connecting': function() {
-        this.addSystemMessage('connecting');
+        this.addSystemAction('connecting');
       },
 
       'connected': function() {
-        this.addSystemMessage('connected!');
+        this.addSystemAction('connected!');
       },
 
       'disconnected': function() {
-        this.addSystemMessage('disconnected :(');
+        this.addSystemAction('disconnected :(');
       },
 
       'reconnecting': function(delay) {
-        this.addSystemMessage('reconnecting in ' + delay + ' seconds...');
+        this.addSystemAction('reconnecting in ' + delay + ' seconds...');
       },
 
       'message:chat': function(message) {
-        this.addChatMessage(message.from, message.body);
+        if (message.body.indexOf('/me ') === 0) {
+          this.addUserAction(message.from, message.body.slice(4));
+        } else {
+          this.addUserMessage(message.from, message.body);
+        }
       },
 
       'message:vote': function(message) {
@@ -31,45 +37,39 @@
       },
 
       'message:join': function(message) {
-        this.addSystemMessage(message.user + ' has joined the room');
+        this.addUserAction(message.user, 'joined the room');
       },
 
       'message:part': function(message) {
-        this.addSystemMessage(message.user + ' has left the room');
+        this.addUserAction(message.user, 'left the room');
       },
 
       'message:please_vote': function(message) {
-        this.addSystemMessage('polls are closing soon, please vote');
+        this.addSystemAction('polls are closing soon, please vote');
       },
 
       'message:merge': function(message) {
-        this.addSystemMessage('merging with other room...');
+        this.addSystemAction('merging with other room...');
         // TODO: add some jitter before refresh to avoid thundering herd
         $.refresh()
       },
 
       'message:abandon': function(message) {
-        this.addSystemMessage('room has been abandoned');
+        this.addSystemAction('room has been abandoned');
       },
 
       'message:continue': function(message) {
-        this.addSystemMessage('room has been continued');
+        this.addSystemAction('room has been continued');
       },
 
       'message:no_match': function(message) {
-        this.addSystemMessage('no compatible room found for matching');
+        this.addSystemAction('no compatible room found for matching');
       },
 
     },
 
     roomEvents: {
       'success:vote': function(room, data) {
-        if (data.confirmed) {
-          this.addSystemMessage('you have confirmed your vote of ' + data.vote);
-        } else {
-          this.addSystemMessage('you have voted: ' + data.vote);
-        }
-
         this.currentUser.set(data);
       },
 
@@ -95,9 +95,7 @@
 
     roomMessagesEvents: {
       add: function(message, messageList) {
-        var userName = message.get('author');
-        var user = this._ensureUser(userName, { present: true });
-        this.chatWindow.addMessage(user, message);
+        this.chatWindow.addMessage(message);
       },
     },
 
@@ -160,6 +158,16 @@
           this.addSystemMessage('you have not voted yet');
         }
       },
+
+      'me': function(/* args */) {
+        var messageText = [].slice.call(arguments).join(' ');
+
+        if (messageText.length > 0) {
+          this.room.postMessage('/me ' + messageText);
+        } else {
+          this.addSystemMessage('use: /me your message here');
+        }
+      },
     },
 
     initialize: function(options) {
@@ -170,12 +178,6 @@
       this.room = new models.RobinRoom({
         room_id: this.options.room_id,
         room_name: this.options.room_name,
-      });
-
-      this.systemUser = new models.RobinUser({
-        name: '[robin]',
-        userClass: 'system',
-        present: true,
       });
 
       var currentUser;
@@ -252,6 +254,11 @@
           .prepend(this.desktopNotifier.$el);
       }
 
+      // favicon
+      this.faviconUpdater = new r.robin.favicon.UnreadUpdateCounter({
+        model: this.roomMessages,
+      });
+
       // wire up events
       this._listenToEvents(this.room, this.roomEvents);
       this._listenToEvents(this.roomParticipants, this.roomParticipantsEvents);
@@ -280,10 +287,6 @@
     },
 
     _ensureUser: function(userName, setAttrs) {
-      if (userName === this.systemUser.get('name')) {
-        return this.systemUser;
-      }
-      
       var user = this.roomParticipants.get(userName);
 
       if (!user) {
@@ -298,10 +301,26 @@
       return user;
     },
 
-    addChatMessage: function(userName, messageText) {
+    addUserMessage: function(userName, messageText) {
+      var user = this._ensureUser(userName, { present: true });
+      
       var message = new models.RobinMessage({
         author: userName,
         message: messageText,
+        userClass: user.get('userClass'),
+      });
+
+      this.roomMessages.add(message);
+    },
+
+    addUserAction: function(userName, actionText) {
+      var user = this._ensureUser(userName, { present: true });
+
+      var message = new models.RobinMessage({
+        author: userName,
+        message: actionText,
+        messageClass: 'action',
+        userClass: user.get('userClass'),
       });
 
       this.roomMessages.add(message);
@@ -309,8 +328,20 @@
 
     addSystemMessage: function(messageText) {
       var message = new models.RobinMessage({
-        author: this.systemUser.get('name'),
+        author: this.SYSTEM_USER_NAME,
         message: messageText,
+        userClass: 'system',
+      });
+
+      this.roomMessages.add(message);
+    },
+
+    addSystemAction: function (actionText) {
+      var message = new models.RobinMessage({
+        author: this.SYSTEM_USER_NAME,
+        message: actionText,
+        messageClass: 'action',
+        userClass: 'system',
       });
 
       this.roomMessages.add(message);
@@ -325,9 +356,9 @@
       var user = this._ensureUser(userName, setAttrs);
 
       if (confirmed) {
-        this.addSystemMessage(userName + ' confirmed their vote to ' + vote);
+        this.addUserAction(userName, 'confirmed their vote to ' + vote);
       } else {
-        this.addSystemMessage(userName + ' voted to ' + vote);
+        this.addUserAction(userName, 'voted to ' + vote);
       }
     },
   });

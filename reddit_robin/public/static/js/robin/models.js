@@ -7,6 +7,9 @@
   var DEFAULT_USER_CLASS = 'user';
   var USER_CLASSES = ['user', 'self', 'system'];
 
+  var DEFAULT_MESSAGE_CLASS = 'message';
+  var MESSAGE_CLASSES = ['message', 'action'];
+
   function OneOf(attrName, values) {
     return function(model) {
       var value = model.get(attrName);
@@ -51,11 +54,15 @@
 
     validators: [
       r.models.validators.StringLength('message', 1, this.MAX_LENGTH),
+      OneOf('messageClass', MESSAGE_CLASSES),
+      OneOf('userClass', USER_CLASSES),
     ],
 
     defaults: {
-      message: '',
       author: '',
+      message: '',
+      messageClass: DEFAULT_MESSAGE_CLASS,
+      userClass: DEFAULT_USER_CLASS,
     },
   });
 

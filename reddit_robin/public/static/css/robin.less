@@ -362,24 +362,26 @@ body {
         font-weight: 300;
     }
 
-    .robin-message--body {
+    .robin-message--message {
         margin-left: 5px;
     }
 
     &.robin-message--display-compact {
-        .robin-message--body {
+        .robin-message--message {
             margin-left: 15px;
         }
     }
 
     &.robin--user-class--system {
         color: @robin--color-text-system;
+    }
 
-        .robin-message--body {
+    &.robin--message-class--action {
+        .robin-message--from,
+        .robin-message--message {
             font-style: italic;
         }
     }
-
 }
 
 
