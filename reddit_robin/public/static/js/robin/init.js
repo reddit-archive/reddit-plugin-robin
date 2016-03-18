@@ -37,11 +37,11 @@
       },
 
       'message:join': function(message) {
-        this.addSystemAction(message.user + ' has joined the room');
+        this.addUserAction(message.user, 'joined the room');
       },
 
       'message:part': function(message) {
-        this.addSystemAction(message.user + ' has left the room');
+        this.addUserAction(message.user, 'left the room');
       },
 
       'message:please_vote': function(message) {
@@ -362,9 +362,9 @@
       var user = this._ensureUser(userName, setAttrs);
 
       if (confirmed) {
-        this.addSystemAction(userName + ' confirmed their vote to ' + vote);
+        this.addUserAction(userName, 'confirmed their vote to ' + vote);
       } else {
-        this.addSystemAction(userName + ' voted to ' + vote);
+        this.addUserAction(userName, 'voted to ' + vote);
       }
     },
   });
