@@ -70,12 +70,6 @@
 
     roomEvents: {
       'success:vote': function(room, data) {
-        if (data.confirmed) {
-          this.addSystemMessage('you have confirmed your vote of ' + data.vote);
-        } else {
-          this.addSystemMessage('you have voted: ' + data.vote);
-        }
-
         this.currentUser.set(data);
       },
 
@@ -171,7 +165,7 @@
         if (messageText.length > 0) {
           this.room.postMessage('/me ' + messageText);
         } else {
-          this.addSystemMessage('use: /me yofur message here');
+          this.addSystemMessage('use: /me your message here');
         }
       },
     },
