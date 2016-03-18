@@ -1,6 +1,7 @@
 import posixpath
 
 from pylons import tmpl_context as c
+from pylons import app_globals as g
 
 from r2.controllers import add_controller
 from r2.controllers.reddit_base import RedditController
@@ -171,6 +172,8 @@ class RobinController(RedditController):
         except ValueError:
             # TODO: error return?
             return
+
+        g.stats.simple_event('robin.vote.%s' % vote)
 
         websockets.send_broadcast(
             namespace="/robin/" + room.id,
