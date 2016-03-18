@@ -29,7 +29,7 @@ from .pages import (
     RobinJoin,
     RobinChat,
 )
-from .models import RobinRoom
+from .models import RobinRoom, VALID_VOTES
 from .matchmaker import add_to_waitinglist
 from .reaper import prompt_for_voting, reap_ripe_rooms
 
@@ -117,8 +117,8 @@ class RobinController(RedditController):
             user_list.append({
                 "name": user.name,
                 "present": user._id in all_present_ids,
-                "vote": vote.name if vote else "NOVOTE",
-                "confirmed": vote.confirmed if vote else False,
+                "vote": vote,
+                "confirmed": False,
             });
 
         return RobinChatPage(
@@ -158,27 +158,21 @@ class RobinController(RedditController):
         VUser(),
         VModhash(),
         room=VRobinRoom("room_id"),
-        vote=VOneOf("vote", ("INCREASE", "CONTINUE", "ABANDON")),
-        confirmed=VBoolean("confirmed"),
+        vote=VOneOf("vote", VALID_VOTES),
     )
-    def POST_vote(self, form, jquery, room, vote, confirmed):
+    def POST_vote(self, form, jquery, room, vote):
         if not vote:
             # TODO: error return?
             return
 
-        try:
-            room.change_vote(c.user, vote, confirmed)
-        except ValueError:
-            # TODO: error return?
-            return
-
+        room.set_vote(c.user, vote)
         websockets.send_broadcast(
             namespace="/robin/" + room.id,
             type="vote",
             payload={
                 "from": c.user.name,
                 "vote": vote,
-                "confirmed": confirmed,
+                "confirmed": False,
             },
         )
 
