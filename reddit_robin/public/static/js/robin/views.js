@@ -9,23 +9,23 @@
       this.lastMessageFrom = null;
     },
 
-    addMessage: function(user, message) {
+    addMessage: function(message) {
       var date = new Date();
       var time = date.toLocaleTimeString ? date.toLocaleTimeString() : date.toTimeString();      
       var scrollOffset = (this.$el.prop('scrollHeight') - this.$el.scrollTop());
       var wasScrolledDown = (scrollOffset === this.$el.height());
-      var templateData = {
+
+      var templateData = _.extend(message.toJSON(), {
         isoDate: date.toISOString(),
         timestamp: time,
-        from: user.get('name'),
-        userClass: user.get('userClass'),
-        body: message.get('message'),
-      };
+      });
 
-      if (user.get('name') === this.lastMessageFrom) {
+      if (message.get('messageClass') !== 'message') {
+        this.lastMessageFrom = null;
+      } else if (message.get('author') === this.lastMessageFrom) {
         templateData.displayCompact = true;
       } else {
-        this.lastMessageFrom = user.get('name');
+        this.lastMessageFrom = message.get('author');
       }
 
       var el = r.templates.make(this.TEMPLATE_NAME, templateData);

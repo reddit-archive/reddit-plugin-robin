@@ -2,10 +2,11 @@
         <% if (thing.displayCompact) { %>
             robin-message--display-compact
         <% } %>
+        robin--message-class--<%- thing.messageClass %>
         robin--user-class--<%- thing.userClass %>">
     <time class="robin-message--timestamp" datetime="<%- thing.isoDate %>"><%- thing.timestamp %></time>
     <% if (!thing.displayCompact) { %>
-      <span class="robin-message--from robin--username"><%- thing.from %></span>
+      <span class="robin-message--from robin--username"><%- thing.author %></span>
     <% } %>
-    <span class="robin-message--body"><%- thing.body %></span>
+    <span class="robin-message--message"><%- thing.message %></span>
 </div>
