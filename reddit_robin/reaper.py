@@ -55,8 +55,8 @@ def reap_ripe_rooms(room_age_minutes=10):
         votes = votes_by_user.values()
 
         num_total_votes = len(votes)
-        num_increase = sum(1 for vote in votes if vote.name == "INCREASE")
-        num_continue = sum(1 for vote in votes if vote.name == "CONTINUE")
+        num_increase = sum(1 for vote in votes if vote == "INCREASE")
+        num_continue = sum(1 for vote in votes if vote == "CONTINUE")
         # abandon votes are novotes plus explicit abandon
         num_abandon = num_total_votes - num_increase - num_continue
 
