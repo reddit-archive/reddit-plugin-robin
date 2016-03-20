@@ -54,6 +54,11 @@
         $.refresh()
       },
 
+      'message:users_abandoned': function(message) {
+        // TODO: how to kick the users and prevent them from receiving
+        // additional messages?
+      },
+
       'message:abandon': function(message) {
         this.addSystemAction('room has been abandoned');
       },

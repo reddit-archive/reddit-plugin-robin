@@ -341,11 +341,11 @@ class RoomsByParticipant(tdb_cassandra.View):
 
     @classmethod
     def remove_users_from_room(cls, users, room):
-        column = {room._id: ""}
+        column = {room._id: "EXITED"}
         with cls._cf.batch() as b:
             for user in users:
                 rowkey = cls._rowkey(user)
-                b.remove(rowkey, column)
+                b.insert(rowkey, column)
 
     @classmethod
     def get_room_id(cls, user):
@@ -354,8 +354,10 @@ class RoomsByParticipant(tdb_cassandra.View):
             d = cls._cf.get(rowkey, column_count=1, column_reversed=True)
         except tdb_cassandra.NotFoundException:
             return None
-        room_id = d.keys()[0]
-        return room_id
+
+        room_id, status = d.items()[0]
+        if status != "EXITED":
+            return room_id
 
 
 def populate(num_users=16384):
