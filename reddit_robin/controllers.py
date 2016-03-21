@@ -1,5 +1,7 @@
 import posixpath
+from datetime import datetime
 
+from pylons import request
 from pylons import tmpl_context as c
 
 from r2.controllers import add_controller
@@ -20,6 +22,7 @@ from r2.lib.validator import (
 )
 from r2.models import Account
 
+from . import events
 from .validators import VRobinRoom
 from .pages import (
     RobinAdmin,
@@ -142,8 +145,6 @@ class RobinController(RedditController):
         if form.has_errors("message", errors.NO_TEXT, errors.TOO_LONG):
             return
 
-        # if we decide we want logging, perhaps we can make a logger that
-        # watches the amqp bus instead of complicating this request logic?
         websockets.send_broadcast(
             namespace="/robin/" + room.id,
             type="chat",
@@ -152,6 +153,15 @@ class RobinController(RedditController):
                 "body": message,
             },
         )
+
+        events.message(
+            room=room,
+            message=message,
+            sent_dt=datetime.utcnow(),
+            context=c,
+            request=request
+        )
+
 
     @validatedForm(
         VUser(),
