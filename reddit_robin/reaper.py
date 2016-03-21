@@ -158,7 +158,6 @@ def merge_rooms(room1, room2):
 
 def alert_no_match(room):
     print "no match for %s" % room
-    room.continu()
 
     websockets.send_broadcast(
         namespace="/robin/" + room.id,

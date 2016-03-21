@@ -33,7 +33,7 @@ class RobinJoin(Templated):
 
 class RobinAll(Templated):
     def __init__(self):
-        all_rooms = list(RobinRoom.generate_alive_rooms())
+        all_rooms = list(RobinRoom.generate_voting_rooms())
         self.participants_by_room = {}
         for room in all_rooms:
             participant_ids = room.get_all_participants()

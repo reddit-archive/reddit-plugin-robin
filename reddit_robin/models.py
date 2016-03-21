@@ -19,6 +19,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
         'is_alive',
         'is_abandoned',
         'is_merged',
+        'is_continued',
     )
     _date_props = (
         'last_prompt_time',
@@ -28,6 +29,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
         is_alive=True,
         is_abandoned=False,
         is_merged=False,
+        is_continued=False,
     )
 
     @classmethod
@@ -100,7 +102,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
         self._commit()
 
     def continu(self):
-        self.last_reap_time = datetime.now(g.tz)
+        self.is_continued = True
         self._commit()
 
     @classmethod
@@ -144,15 +146,15 @@ class RobinRoom(tdb_cassandra.UuidThing):
             yield room
 
     @classmethod
-    def generate_alive_rooms(cls):
+    def generate_voting_rooms(cls):
         for room in cls.generate_all_rooms():
-            if room.is_alive:
+            if room.is_alive and not room.is_continued:
                 yield room
 
     @classmethod
     def generate_rooms_for_prompting(cls, cutoff):
         """Return all rooms that are alive and were not prompted recently"""
-        for room in cls.generate_alive_rooms():
+        for room in cls.generate_voting_rooms():
             if getattr(room, "last_prompt_time", room.date) < cutoff:
                 yield room
 
@@ -163,7 +165,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
     @classmethod
     def generate_rooms_for_reaping(cls, cutoff):
         """Return all rooms that should be reaped"""
-        for room in cls.generate_alive_rooms():
+        for room in cls.generate_voting_rooms():
             if getattr(room, "last_reap_time", room.date) < cutoff:
                 yield room
 
