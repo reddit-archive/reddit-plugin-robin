@@ -145,8 +145,6 @@ class RobinController(RedditController):
         if form.has_errors("message", errors.NO_TEXT, errors.TOO_LONG):
             return
 
-        # if we decide we want logging, perhaps we can make a logger that
-        # watches the amqp bus instead of complicating this request logic?
         websockets.send_broadcast(
             namespace="/robin/" + room.id,
             type="chat",
