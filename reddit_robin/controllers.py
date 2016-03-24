@@ -217,3 +217,20 @@ class RobinController(RedditController):
     )
     def POST_admin_reap(self, form, jquery):
         reap_ripe_rooms(room_age_minutes=0)
+
+    @validatedForm(
+        VAdmin(),
+        VModhash(),
+        message=VLength("message", max_length=140),
+    )
+    def POST_admin_broadcast(self, form, jquery, message):
+        if form.has_errors("message", errors.NO_TEXT, errors.TOO_LONG):
+            return
+
+        websockets.send_broadcast(
+            namespace="/robin",
+            type="system_broadcast",
+            payload={
+                "body": message,
+            },
+        )

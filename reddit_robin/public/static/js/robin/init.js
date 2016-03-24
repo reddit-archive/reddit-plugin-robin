@@ -32,6 +32,10 @@
         }
       },
 
+      'message:system_broadcast': function(message) {
+        this.addSystemMessage(message.body);
+      },
+
       'message:vote': function(message) {
         this.updateUserVote(message.from, message.vote);
       },

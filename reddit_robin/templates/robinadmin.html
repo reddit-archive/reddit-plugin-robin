@@ -7,6 +7,13 @@
   <button class="reap-button btn" onclick="return runReaper(this);">
     START REAPER
   </button>
+
+  <hr>
+
+  <form id="systemBroadcast">
+    <input type="text" name="message" max="140">
+    <button type="submit">BROADCAST</button>
+  </form>
 </div>
 
 <script>
@@ -25,4 +32,19 @@ function runReaper(elem) {
   });
   return false;
 }
+
+$(function() {
+  $('#systemBroadcast').on('submit', function(e) {
+    r.ajax({
+      type: 'POST',
+      url: '/api/admin_broadcast',
+      data: {
+        message: e.target.message.value,
+      },
+    });
+
+    e.target.message.value = '';
+    e.preventDefault();
+  });
+})
 </script>
