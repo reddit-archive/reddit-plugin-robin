@@ -3,6 +3,7 @@ import posixpath
 from pylons import app_globals as g
 from pylons import tmpl_context as c
 
+from r2.config import feature
 from r2.controllers import add_controller
 from r2.controllers.reddit_base import RedditController
 from r2.lib import websockets
@@ -37,6 +38,11 @@ from .reaper import prompt_for_voting, reap_ripe_rooms
 
 @add_controller
 class RobinController(RedditController):
+    def pre(self):
+        RedditController.pre(self)
+        if not feature.is_enabled("robin"):
+            self.abort404()
+
     @validate(
         VUser(),
     )
