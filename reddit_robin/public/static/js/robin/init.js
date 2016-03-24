@@ -183,6 +183,7 @@
       this.room = new models.RobinRoom({
         room_id: this.options.room_id,
         room_name: this.options.room_name,
+        winning_vote: this.options.is_continued ? 'CONTINUE' : undefined,
       });
 
       var currentUser;
@@ -231,6 +232,7 @@
       
       this.voteWidget = new views.RobinVoteWidget({
         el: this.$el.find('#robinVoteWidget')[0],
+        isHidden: this.room.isComplete(),
       });
 
       this.userListWidget = new views.RobinUserListWidget({
@@ -362,6 +364,7 @@
   $(function() {
     new RobinChat({
       el: document.getElementById('robinChat'),
+      is_continued: r.config.robin_room_is_continued,
       room_name: r.config.robin_room_name,
       room_id: r.config.robin_room_id,
       websocket_url: r.config.robin_websocket_url,

@@ -86,6 +86,14 @@
       'click .robin-chat--vote': '_onVote',
     },
 
+    initialize: function(options) {
+      if (options.isHidden) {
+        this.hide();
+      }
+
+      this.$el.removeAttr('hidden');
+    },
+
     _onVote: function(e) {
       if (this.isHidden) { return; }
 
