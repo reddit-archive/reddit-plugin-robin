@@ -137,6 +137,8 @@
           this.addSystemMessage('use: /vote [' + r.robin.VOTE_TYPES.join(',') + ']');
         } else if (r.robin.VOTE_TYPES.indexOf(vote.toUpperCase()) < 0) {
           this.addSystemMessage('that is not a valid vote type');
+        } else if (vote.toUpperCase() === this.currentUser.get('vote')) {
+          this.addSystemMessage('that is already your vote');
         } else {
           this.room.postVote(vote.toUpperCase());
           this.voteWidget.setActiveVote(vote);
