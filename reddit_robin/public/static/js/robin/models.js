@@ -136,6 +136,11 @@
       room_id: null,
       room_name: null,
       api_type: 'json',
+      winning_vote: NO_VOTE_TYPE,
+    },
+
+    isComplete: function() {
+      return this.get('winning_vote') !== NO_VOTE_TYPE;
     },
 
     postMessage: function(messageText) {
@@ -165,6 +170,10 @@
       } else {
         this._post('vote', vote);
       }
+    },
+
+    postLeaveRoom: function() {
+      this._post('leave_room');
     },
 
     _getPostData: function(models) {

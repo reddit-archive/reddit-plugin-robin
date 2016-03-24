@@ -53,9 +53,7 @@
       },
 
       'message:merge': function(message) {
-        this.addSystemAction('merging with other room...');
-        // TODO: add some jitter before refresh to avoid thundering herd
-        $.refresh()
+        this.room.set({ winning_vote: 'INCREASE' });
       },
 
       'message:users_abandoned': function(message) {
@@ -64,11 +62,11 @@
       },
 
       'message:abandon': function(message) {
-        this.addSystemAction('room has been abandoned');
+        this.room.set({ winning_vote: 'ABANDON' });
       },
 
       'message:continue': function(message) {
-        this.addSystemAction('room has been continued');
+        this.room.set({ winning_vote: 'CONTINUE' });
       },
 
       'message:no_match': function(message) {
@@ -102,6 +100,28 @@
 
       'change:room_name': function(model, value) {
         this.$el.find('.robin-chat--room-name').text(value);
+      },
+
+      'change:winning_vote': function(room, vote) {
+        if (room.isComplete()) {
+          this.voteWidget.hide();
+        }
+
+        if (vote === 'ABANDON') {
+          this.addSystemAction('room has been abandoned');
+        } else if (vote === 'CONTINUE') {
+          this.addSystemAction('room has been continued');
+          this.quitWidget.show();
+        } else if (vote === 'INCREASE') {
+          this.addSystemAction('room has been increased');
+          this.addSystemAction('merging with other room...');
+          // TODO: add some jitter before refresh to avoid thundering herd
+          $.refresh()
+        }
+      },
+
+      'success:leave_room': function() {
+        $.refresh();
       },
     },
 
@@ -140,7 +160,18 @@
 
     voteWidgetEvents: {
       'vote': function(vote) {
-        this.room.postVote(vote.toUpperCase());
+        if (this.room.isComplete()) {
+          this.addSystemMessage('voting is complete');
+        } else {
+          this.room.postVote(vote.toUpperCase());
+        }
+      },
+    },
+
+    quitWidgetEvents: {
+      'quit': function() {
+        this.addSystemMessage('leaving room...');
+        this.room.postLeaveRoom();
       },
     },
 
@@ -150,7 +181,9 @@
       },
 
       'vote': function(vote) {
-        if (!vote) {
+        if (this.room.isComplete()) {
+          this.addSystemMessage('voting is complete');
+        } else if (!vote) {
           this.addSystemMessage('use: /vote [' + r.robin.VOTE_TYPES.join(',') + ']');
         } else if (r.robin.VOTE_TYPES.indexOf(vote.toUpperCase()) < 0) {
           this.addSystemMessage('that is not a valid vote type');
@@ -171,6 +204,10 @@
           this.addSystemMessage('use: /me your message here');
         }
       },
+
+      'leave_room': function() {
+        this.room.postLeaveRoom();
+      },
     },
 
     initialize: function(options) {
@@ -181,6 +218,7 @@
       this.room = new models.RobinRoom({
         room_id: this.options.room_id,
         room_name: this.options.room_name,
+        winning_vote: this.options.is_continued ? 'CONTINUE' : undefined,
       });
 
       var currentUser;
@@ -229,6 +267,12 @@
       
       this.voteWidget = new views.RobinVoteWidget({
         el: this.$el.find('#robinVoteWidget')[0],
+        isHidden: this.room.isComplete(),
+      });
+
+      this.quitWidget = new views.RobinQuitWidget({
+        el: this.$el.find('#robinQuitWidget')[0],
+        isHidden: !this.room.isComplete(),
       });
 
       this.userListWidget = new views.RobinUserListWidget({
@@ -264,6 +308,7 @@
       this._listenToEvents(this.roomMessages, this.roomMessagesEvents);
       this._listenToEvents(this.chatInput, this.chatInputEvents);
       this._listenToEvents(this.voteWidget, this.voteWidgetEvents);
+      this._listenToEvents(this.quitWidget, this.quitWidgetEvents);
 
       // initialize websockets. should be last!
       this.websocket = new r.WebSocket(options.websocket_url);
@@ -362,6 +407,7 @@
   $(function() {
     new RobinChat({
       el: document.getElementById('robinChat'),
+      is_continued: r.config.robin_room_is_continued,
       room_name: r.config.robin_room_name,
       room_id: r.config.robin_room_id,
       websocket_url: r.config.robin_websocket_url,
