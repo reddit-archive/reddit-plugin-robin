@@ -14,10 +14,10 @@ from r2.lib.validator import (
     VAccountByName,
     VAdmin,
     VBoolean,
-    VEmployee,
     VLength,
     VModhash,
     VOneOf,
+    VUser,
 )
 from r2.models import Account
 
@@ -38,7 +38,7 @@ from .reaper import prompt_for_voting, reap_ripe_rooms
 @add_controller
 class RobinController(RedditController):
     @validate(
-        VEmployee(),
+        VUser(),
     )
     def GET_join(self):
         room = RobinRoom.get_room_for_user(c.user)
@@ -69,7 +69,7 @@ class RobinController(RedditController):
         ).render()
 
     @validate(
-        VEmployee(),
+        VUser(),
     )
     def GET_chat(self):
         room = RobinRoom.get_room_for_user(c.user)
@@ -133,7 +133,7 @@ class RobinController(RedditController):
         ).render()
 
     @validatedForm(
-        VEmployee(),
+        VUser(),
         VModhash(),
         room=VRobinRoom("room_id"),
         message=VLength("message", max_length=140),  # TODO: do we want md?
@@ -155,7 +155,7 @@ class RobinController(RedditController):
         )
 
     @validatedForm(
-        VEmployee(),
+        VUser(),
         VModhash(),
         room=VRobinRoom("room_id"),
         vote=VOneOf("vote", VALID_VOTES),
@@ -176,7 +176,7 @@ class RobinController(RedditController):
         )
 
     @validatedForm(
-        VEmployee(),
+        VUser(),
         VModhash(),
     )
     def POST_join_room(self, form, jquery):
@@ -189,7 +189,7 @@ class RobinController(RedditController):
         add_to_waitinglist(c.user)
 
     @validatedForm(
-        VEmployee(),
+        VUser(),
         VModhash(),
     )
     def POST_leave_room(self, form, jquery):
@@ -198,7 +198,7 @@ class RobinController(RedditController):
             return
         room.remove_participants([c.user])
 
-    @json_validate(VEmployee())
+    @json_validate(VUser())
     def GET_room_assignment(self, responder):
         room = RobinRoom.get_room_for_user(c.user)
         if room:
