@@ -240,11 +240,11 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
     def get_all_participant_ids(cls, room):
         rowkey = cls._rowkey(room)
         try:
-            obj = cls._byID(rowkey)
+            columns = cls._cf.get(rowkey)
         except tdb_cassandra.NotFoundException:
             return set()
 
-        return {int(id36, 36) for id36 in obj._t.keys()}
+        return {int(id36, 36) for id36 in columns.keys()}
 
     @classmethod
     def get_vote(cls, room, user):
@@ -266,12 +266,12 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
     def get_all_votes(cls, room):
         rowkey = cls._rowkey(room)
         try:
-            obj = cls._byID(rowkey)
+            columns = cls._cf.get(rowkey)
         except tdb_cassandra.NotFoundException:
             return {}
 
         ret = {}
-        for user_id36, vote in obj._t.iteritems():
+        for user_id36, vote in columns.iteritems():
             ret[int(user_id36, 36)] = vote
         return ret
 
@@ -315,10 +315,10 @@ class ParticipantPresenceByRoom(tdb_cassandra.View):
     def get_present_user_ids(cls, room):
         rowkey = cls._rowkey(room)
         try:
-            obj = cls._byID(rowkey)
+            columns = cls._cf.get(rowkey)
         except tdb_cassandra.NotFoundException:
             return set()
-        return {int(id36, 36) for id36 in obj._t.keys()}
+        return {int(id36, 36) for id36 in columns.keys()}
 
 
 class RoomsByParticipant(tdb_cassandra.View):
