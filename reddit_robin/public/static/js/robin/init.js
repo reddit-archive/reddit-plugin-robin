@@ -139,7 +139,11 @@
 
     voteWidgetEvents: {
       'vote': function(vote) {
-        this.room.postVote(vote.toUpperCase());
+        if (this.room.isComplete()) {
+          this.addSystemMessage('voting is complete');
+        } else {
+          this.room.postVote(vote.toUpperCase());
+        }
       },
     },
 
@@ -149,7 +153,9 @@
       },
 
       'vote': function(vote) {
-        if (!vote) {
+        if (this.room.isComplete()) {
+          this.addSystemMessage('voting is complete');
+        } else if (!vote) {
           this.addSystemMessage('use: /vote [' + r.robin.VOTE_TYPES.join(',') + ']');
         } else if (r.robin.VOTE_TYPES.indexOf(vote.toUpperCase()) < 0) {
           this.addSystemMessage('that is not a valid vote type');
