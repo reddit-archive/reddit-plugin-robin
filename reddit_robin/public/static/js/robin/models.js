@@ -10,6 +10,9 @@
   var DEFAULT_MESSAGE_CLASS = 'message';
   var MESSAGE_CLASSES = ['message', 'action'];
 
+  var DEFAULT_FLAIR_CLASS = 'no-flair';
+  var NUM_FLAIR_CLASSES = 6;
+
   function OneOf(attrName, values) {
     return function(model) {
       var value = model.get(attrName);
@@ -63,9 +66,9 @@
       message: '',
       messageClass: DEFAULT_MESSAGE_CLASS,
       userClass: DEFAULT_USER_CLASS,
+      flairClass: DEFAULT_FLAIR_CLASS,
     },
   });
-
 
   var RobinVote = _RobinModel.extend({
     validators: [
@@ -81,6 +84,8 @@
   var RobinUser = _RobinModel.extend({
     idAttribute: 'name',
 
+    flairClass: DEFAULT_FLAIR_CLASS,
+
     validators: [
       IsString('name'),
       OneOf('userClass', USER_CLASSES),
@@ -95,7 +100,13 @@
       present: false,
     },
 
-    
+    initialize: function() {
+      var lowerName = this.get('name').toLowerCase();
+      var strippedName = lowerName.replace(/[^a-z0-9]/g, '');
+      var flairNum = parseInt(strippedName, 36) % NUM_FLAIR_CLASSES;
+      this.flairClass = 'flair-' + flairNum;
+    },
+
     hasVoted: function() {
       return this.get('vote') !== NO_VOTE_TYPE;
     },

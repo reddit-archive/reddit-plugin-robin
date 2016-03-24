@@ -294,6 +294,7 @@
         author: userName,
         message: messageText,
         userClass: user.get('userClass'),
+        flairClass: user.flairClass,
       });
 
       this.roomMessages.add(message);
@@ -307,6 +308,7 @@
         message: actionText,
         messageClass: 'action',
         userClass: user.get('userClass'),
+        flairClass: user.flairClass,
       });
 
       this.roomMessages.add(message);
