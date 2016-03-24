@@ -80,6 +80,8 @@ class Robin(Plugin):
             conditions={"function": not_in_sr})
         mc("/api/admin_reap", controller="robin", action="admin_reap",
             conditions={"function": not_in_sr})
+        mc("/api/admin_broadcast", controller="robin", action="admin_broadcast",
+            conditions={"function": not_in_sr})
 
     def load_controllers(self):
         from reddit_robin.controllers import (
