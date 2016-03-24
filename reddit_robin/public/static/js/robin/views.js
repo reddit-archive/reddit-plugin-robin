@@ -79,6 +79,7 @@
     ACTIVE_STATE_CLASS: 'robin--active',
     VOTE_BUTTON_CLASS: 'robin-chat--vote',
 
+    isHidden: false,
     currentTarget: null,
 
     events: {
@@ -86,6 +87,8 @@
     },
 
     _onVote: function(e) {
+      if (this.isHidden) { return; }
+
       var value = e.target.value;
       this.trigger('vote', value);
       this._setActiveTarget(e.target);
@@ -106,6 +109,11 @@
       var selector = '.' + this.VOTE_BUTTON_CLASS + '-' + voteType.toLowerCase();
       var el = this.$el.find(selector)[0];
       this._setActiveTarget(el);
+    },
+
+    hide: function() {
+      this.isHidden = true;
+      this.$el.slideUp();
     },
   });
 

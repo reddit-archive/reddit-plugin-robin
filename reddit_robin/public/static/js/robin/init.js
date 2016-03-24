@@ -49,6 +49,7 @@
       },
 
       'message:merge': function(message) {
+        this.room.set({ winning_vote: 'INCREASE' });
         this.addSystemAction('merging with other room...');
         // TODO: add some jitter before refresh to avoid thundering herd
         $.refresh()
@@ -60,14 +61,15 @@
       },
 
       'message:abandon': function(message) {
-        this.addSystemAction('room has been abandoned');
+        this.room.set({ winning_vote: 'ABANDON' });
       },
 
       'message:continue': function(message) {
-        this.addSystemAction('room has been continued');
+        this.room.set({ winning_vote: 'CONTINUE' });
       },
 
       'message:no_match': function(message) {
+        this.room.set({ winning_vote: 'INCREASE' });
         this.addSystemAction('no compatible room found for matching');
       },
 
@@ -89,6 +91,20 @@
 
       'success:message': function() {
         this.chatInput.clear();
+      },
+
+      'change:winning_vote': function(room, vote) {
+        if (room.isComplete()) {
+          this.voteWidget.hide();
+        }
+
+        if (vote === 'ABANDON') {
+          this.addSystemAction('room has been abandoned');
+        } else if (vote === 'CONTINUE') {
+          this.addSystemAction('room has been continued');
+        } else if (vote === 'INCREASE') {
+          this.addSystemAction('room has been increased');
+        }
       },
     },
 
