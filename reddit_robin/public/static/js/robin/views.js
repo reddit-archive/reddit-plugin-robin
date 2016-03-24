@@ -86,6 +86,8 @@
     },
 
     _onVote: function(e) {
+      if (e.target === this.currentTarget) { return; }
+
       var value = e.target.value;
       this.trigger('vote', value);
       this._setActiveTarget(e.target);
