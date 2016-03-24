@@ -41,6 +41,10 @@ def run_waitinglist():
                     current_room_id = None
                     current_room = make_new_room()
 
+                if not current_room.is_alive or current_room.is_continued:
+                    current_room_id = None
+                    current_room = make_new_room()
+
             current_room.add_participants([user])
             print "added %s to %s" % (user.name, current_room.id)
 
