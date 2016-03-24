@@ -71,6 +71,11 @@
         this.addSystemAction('no compatible room found for matching');
       },
 
+      'message:updated_name': function(message) {
+        this.room.set({
+          room_name: message.room_name,
+        })
+      },
     },
 
     roomEvents: {
@@ -89,6 +94,10 @@
 
       'success:message': function() {
         this.chatInput.clear();
+      },
+
+      'change:room_name': function(model, value) {
+        this.$el.find('.robin-chat--room-name').text(value);
       },
     },
 
