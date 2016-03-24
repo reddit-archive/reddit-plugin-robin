@@ -2,6 +2,7 @@
         <% if (thing.displayCompact) { %>
             robin-message--display-compact
         <% } %>
+        robin--flair-class--<%- thing.flairClass %>
         robin--message-class--<%- thing.messageClass %>
         robin--user-class--<%- thing.userClass %>">
     <time class="robin-message--timestamp" datetime="<%- thing.isoDate %>"><%- thing.timestamp %></time>

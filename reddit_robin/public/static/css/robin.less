@@ -5,6 +5,14 @@
 @color-white: #FFFFFF;
 @color-off-white: #FCFCF7;
 
+// colors borrowed from the button flair
+@color-press-1: #E50000;
+@color-press-2: #E59500;
+@color-press-3: #E5D900;
+@color-press-4: #02BE01;
+@color-press-5: #0083C7;
+@color-press-6: #820080;
+
 body {
     background-color: @color-pale-grey;
 }
@@ -25,13 +33,42 @@ body {
 @robin--color-text-default: @color-semi-black;
 @robin--color-text-inverted: @color-pale-grey;
 @robin--color-text-system: @color-grey;
-@robin--color-text-user: #0079D3;
+@robin--color-flair-0: @color-press-1;
+@robin--color-flair-1: @color-press-2;
+@robin--color-flair-2: @color-press-3;
+@robin--color-flair-3: @color-press-4;
+@robin--color-flair-4: @color-press-5;
+@robin--color-flair-5: @color-press-6;
 
 .robin--username {
     color: @robin--color-text-default;
 
+    .robin--flair-class--flair-0 & {
+        color: @robin--color-flair-0;
+    }
+
+    .robin--flair-class--flair-1 & {
+        color: @robin--color-flair-1;
+    }
+
+    .robin--flair-class--flair-2 & {
+        color: @robin--color-flair-2;
+    }
+
+    .robin--flair-class--flair-3 & {
+        color: @robin--color-flair-3;
+    }
+
+    .robin--flair-class--flair-4 & {
+        color: @robin--color-flair-4;
+    }
+
+    .robin--flair-class--flair-5 & {
+        color: @robin--color-flair-5;
+    }
+
     .robin--user-class--self & {
-        color: @robin--color-text-user;
+        color: @robin--color-text-default;
     }
 
     .robin--user-class--system & {
