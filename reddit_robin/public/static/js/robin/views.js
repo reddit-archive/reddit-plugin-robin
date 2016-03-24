@@ -32,8 +32,12 @@
       this.$chatList.append(el);
 
       if (wasScrolledDown) {
-        this.el.scrollTop = this.el.scrollHeight;
+        this.scrollToRecent();
       }
+    },
+
+    scrollToRecent: function() {
+      this.el.scrollTop = this.el.scrollHeight;
     },
   });
 
@@ -51,10 +55,12 @@
       e.preventDefault();
       var messageText = this.form.message.value;
       if (messageText[0] !== '/') {
+        this.trigger('chat', messageText);
         this.trigger('chat:message', messageText);
       } else {
         var commandArgs = messageText.slice(1).split(/\s+/);
         if (commandArgs[0]) {
+          this.trigger('chat', messageText);
           this.trigger('chat:command', commandArgs[0], commandArgs.slice(1));
         }
       }

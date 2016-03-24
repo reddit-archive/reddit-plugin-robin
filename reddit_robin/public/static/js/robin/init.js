@@ -100,6 +100,10 @@
     },
 
     chatInputEvents: {
+      'chat': function(messageText) {
+        this.chatWindow.scrollToRecent();
+      },
+
       'chat:message': function(messageText) {
         this.room.postMessage(messageText);
       },
