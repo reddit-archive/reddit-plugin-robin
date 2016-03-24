@@ -193,7 +193,7 @@ def move_dead_rooms():
     for _id, columns in RobinRoom._cf.get_range():
         room = RobinRoom._from_serialized_columns(_id, columns)
         if not room.is_alive:
-            RobinRoomOld._cf.insert(_id, columns)
+            RobinRoomDead._cf.insert(_id, columns)
             RobinRoom._cf.remove(_id)
             count += 1
     print "moved %s rooms in %s" % (count, datetime.now(g.tz) - start)
