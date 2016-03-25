@@ -73,8 +73,8 @@ def reap_ripe_rooms(room_age_minutes=10):
         votes_by_user = room.get_all_votes()
         votes = votes_by_user.values()
 
-        abandoning_user_id36s = {
-            id36 for id36, vote in votes_by_user.iteritems()
+        abandoning_user_ids = {
+            _id for _id, vote in votes_by_user.iteritems()
             if vote == ABANDON or vote == NOVOTE
         }
 
