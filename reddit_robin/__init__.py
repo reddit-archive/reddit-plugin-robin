@@ -34,18 +34,14 @@ class Robin(Plugin):
         ),
     }
 
-    config = {
-        # TODO: your static configuratation options go here, e.g.:
-        # ConfigValue.int: [
-        #     "robin_blargs",
-        # ],
-    }
-
     live_config = {
-        # TODO: your live configuratation options go here, e.g.:
-        # ConfigValue.int: [
-        #     "robin_realtime_blargs",
-        # ],
+        ConfigValue.int: [
+            "robin_ratelimit_window",
+        ],
+
+        ConfigValue.dict(ConfigValue.int, ConfigValue.float): [
+            "robin_ratelimit_avg_per_sec",
+        ],
     }
 
     def declare_queues(self, queues):
