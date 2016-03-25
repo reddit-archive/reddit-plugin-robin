@@ -165,12 +165,19 @@ def remove_abandoners(room, users):
 
 def continue_room(room):
     print "continuing %s" % room
-    room.continu()
+    subreddit = room.continu()
+
+    payload = {}
+
+    if subreddit:
+        payload = {
+            "body": "Continue the discussion at /r/%s" % subreddit.name,
+        }
 
     websockets.send_broadcast(
         namespace="/robin/" + room.id,
         type="continue",
-        payload={},
+        payload=payload,
     )
 
 

@@ -4,7 +4,7 @@ import math
 from pylons import app_globals as g
 
 from r2.lib.db import tdb_cassandra
-from r2.models import Account
+from r2.models import Account, Subreddit, SubredditExists
 
 
 class RobinRoom(tdb_cassandra.UuidThing):
@@ -104,6 +104,53 @@ class RobinRoom(tdb_cassandra.UuidThing):
     def continu(self):
         self.is_continued = True
         self._commit()
+
+        return self._create_sr()
+
+    def _generate_sr_name(self):
+        tries = 0
+        generated_name = self.name[:20].replace('-', '_')
+
+        while tries < 20:
+            yield generated_name
+            generated_name = '%s%s' % (generated_name[:18], tries)
+            tries += 1
+
+    def _create_sr(self):
+        subreddit = None
+
+        participant_ids = list(self.get_all_participants())
+        participants = [
+            Account._byID(participant_id)
+            for participant_id in participant_ids
+        ]
+        moderators = participants[:5]
+
+        print "attempting to create sr for %s" % self.name
+        for name in self._generate_sr_name():
+            try:
+                subreddit = Subreddit._new(
+                    name=name,
+                    title=self.name,
+                    author_id=moderators[0]._id,
+                    ip='127.0.0.1',
+                    type='private',
+                )
+                break
+            except SubredditExists:
+                continue
+        else:
+            print "gave up attempting to create sr for %s" % self.name
+            return subreddit
+
+        for moderator in moderators:
+            subreddit.add_moderator(moderator)
+
+        for participant in participants:
+            # To be replaced with UserRel hacking?
+            subreddit.add_contributor(participant)
+
+        return subreddit
 
     @classmethod
     def merge(cls, room1, room2):
