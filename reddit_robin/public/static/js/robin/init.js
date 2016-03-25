@@ -98,12 +98,17 @@
           this.addSystemAction('room has been abandoned');
         } else if (vote === 'CONTINUE') {
           this.addSystemAction('room has been continued');
+          this.quitWidget.show();
         } else if (vote === 'INCREASE') {
           this.addSystemAction('room has been increased');
           this.addSystemAction('merging with other room...');
           // TODO: add some jitter before refresh to avoid thundering herd
           $.refresh()
         }
+      },
+
+      'success:leave_room': function() {
+        $.refresh();
       },
     },
 
@@ -143,6 +148,13 @@
         } else {
           this.room.postVote(vote.toUpperCase());
         }
+      },
+    },
+
+    quitWidgetEvents: {
+      'quit': function() {
+        this.addSystemMessage('leaving room...');
+        this.room.postLeaveRoom();
       },
     },
 
@@ -235,6 +247,11 @@
         isHidden: this.room.isComplete(),
       });
 
+      this.quitWidget = new views.RobinQuitWidget({
+        el: this.$el.find('#robinQuitWidget')[0],
+        isHidden: !this.room.isComplete(),
+      });
+
       this.userListWidget = new views.RobinUserListWidget({
         el: this.$el.find('#robinUserList')[0],
         participants: participants,
@@ -268,6 +285,7 @@
       this._listenToEvents(this.roomMessages, this.roomMessagesEvents);
       this._listenToEvents(this.chatInput, this.chatInputEvents);
       this._listenToEvents(this.voteWidget, this.voteWidgetEvents);
+      this._listenToEvents(this.quitWidget, this.quitWidgetEvents);
 
       // initialize websockets. should be last!
       this.websocket = new r.WebSocket(options.websocket_url);

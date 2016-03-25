@@ -161,6 +161,12 @@
       }
     },
 
+    postLeaveRoom: function() {
+      if (this.isComplete()) {
+        this._post('leave_room');
+      }
+    },
+
     _getPostData: function(models) {
       var models = [this].concat(models);
       var jsonBlobs = models.map(function(m) { return m.toJSON() });
