@@ -24,6 +24,6 @@ def message(room, message, sent_dt, request=None, context=None):
 
     event.add("room_id", room.id)
     event.add("room_name", room.name)
-    event.add_text("message", message)
+    event.add_text("message_body", message)
 
     g.events.save_event(event)

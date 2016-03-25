@@ -159,7 +159,7 @@ class RobinController(RedditController):
             message=message,
             sent_dt=datetime.utcnow(),
             context=c,
-            request=request
+            request=request,
         )
 
 
