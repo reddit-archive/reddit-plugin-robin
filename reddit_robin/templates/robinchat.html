@@ -22,8 +22,8 @@
     </div>
 
     <div class="robin-chat--sidebar">
-        <div id="robinVoteWidget" class="robin-chat--sidebar-widget robin-chat--vote-widget">
-            <div class="robin-chat--vote-buttons">
+        <div id="robinVoteWidget" class="robin-chat--sidebar-widget robin-chat--vote-widget" hidden>
+            <div class="robin-chat--buttons">
                 <button class="robin-chat--vote robin-chat--vote-abandon"
                         value="ABANDON">
                     abandon
@@ -35,6 +35,14 @@
                 <button class="robin-chat--vote robin-chat--vote-increase"
                         value="INCREASE">
                     increase
+                </button>
+            </div>
+        </div>
+
+        <div id="robinQuitWidget" class="robin-chat--sidebar-widget robin-chat--quit-widget" hidden>
+            <div class="robin-chat--buttons">
+                <button class="robin-chat--quit">
+                    leave room
                 </button>
             </div>
         </div>

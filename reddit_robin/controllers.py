@@ -125,6 +125,7 @@ class RobinController(RedditController):
             title="chat in %s" % room.name,
             content=RobinChat(room=room),
             extra_js_config={
+                "robin_room_is_continued": room.is_continued,
                 "robin_room_name": room.name,
                 "robin_room_id": room.id,
                 "robin_websocket_url": websocket_url,

@@ -75,20 +75,32 @@
   });
 
 
-  var RobinVoteWidget = Backbone.View.extend({
+  var RobinButtonWidget = Backbone.View.extend({
     ACTIVE_STATE_CLASS: 'robin--active',
-    VOTE_BUTTON_CLASS: 'robin-chat--vote',
 
+    isHidden: false,
     currentTarget: null,
 
-    events: {
-      'click .robin-chat--vote': '_onVote',
+    initialize: function(options) {
+      this.isHidden = !!options.isHidden;
+
+      if (this.isHidden) {
+        this.$el.hide();
+      } else if (!this.isHidden) {
+        this.$el.show();
+      }
+
+      this.$el.removeAttr('hidden');
     },
 
-    _onVote: function(e) {
-      var value = e.target.value;
-      this.trigger('vote', value);
-      this._setActiveTarget(e.target);
+    hide: function() {
+      this.isHidden = true;
+      this.$el.slideUp();
+    },
+
+    show: function() {
+      this.isHidden = false;
+      this.$el.slideDown();
     },
 
     _setActiveTarget: function(el) {
@@ -101,11 +113,43 @@
         $(this.currentTarget).addClass(this.ACTIVE_STATE_CLASS);
       }
     },
+  })
+
+  var RobinVoteWidget = RobinButtonWidget.extend({
+    VOTE_BUTTON_CLASS: 'robin-chat--vote',
+
+    events: {
+      'click .robin-chat--vote': '_onVote',
+    },
+
+    _onVote: function(e) {
+      if (this.isHidden) { return; }
+
+      var value = e.target.value;
+      this.trigger('vote', value);
+      this._setActiveTarget(e.target);
+    },
 
     setActiveVote: function(voteType) {
       var selector = '.' + this.VOTE_BUTTON_CLASS + '-' + voteType.toLowerCase();
       var el = this.$el.find(selector)[0];
       this._setActiveTarget(el);
+    },
+  });
+
+
+  var RobinQuitWidget = RobinButtonWidget.extend({
+    isHidden: true,
+
+    events: {
+      'click .robin-chat--quit': '_onQuit',
+    },
+
+    _onQuit: function(e) {
+      if (this.isHidden) { return; }
+
+      this.trigger('quit');
+      this._setActiveTarget(e.target);
     },
   });
 
@@ -147,6 +191,7 @@
     RobinChatWindow: RobinChatWindow,
     RobinChatInput: RobinChatInput,
     RobinVoteWidget: RobinVoteWidget,
+    RobinQuitWidget: RobinQuitWidget,
     RobinUserListWidget: RobinUserListWidget,
   };
 }(r, jQuery, _);
