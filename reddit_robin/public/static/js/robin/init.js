@@ -21,7 +21,7 @@
       },
 
       'reconnecting': function(delay) {
-        this.addSystemAction('reconnecting in ' + delay + ' seconds...');
+        this.addSystemAction('reconnecting in ' + Math.floor(delay / 1000) + ' seconds...');
       },
 
       'message:chat': function(message) {
