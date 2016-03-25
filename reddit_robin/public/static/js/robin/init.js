@@ -185,6 +185,10 @@
           this.addSystemMessage('use: /me your message here');
         }
       },
+
+      'leave_room': function() {
+        this.room.postLeaveRoom();
+      },
     },
 
     initialize: function(options) {

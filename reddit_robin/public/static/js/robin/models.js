@@ -162,9 +162,7 @@
     },
 
     postLeaveRoom: function() {
-      if (this.isComplete()) {
-        this._post('leave_room');
-      }
+      this._post('leave_room');
     },
 
     _getPostData: function(models) {
