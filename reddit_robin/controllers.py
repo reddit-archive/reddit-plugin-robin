@@ -1,11 +1,13 @@
+import datetime
 import posixpath
 
+import pytz
 from pylons import app_globals as g
 from pylons import tmpl_context as c
 
 from r2.controllers import add_controller
 from r2.controllers.reddit_base import RedditController
-from r2.lib import websockets
+from r2.lib import websockets, ratelimit, utils
 from r2.lib.errors import errors
 from r2.lib.validator import (
     json_validate,
@@ -132,14 +134,58 @@ class RobinController(RedditController):
             },
         ).render()
 
+    def _has_exceeded_ratelimit(self, form, room):
+        # grab the ratelimit (as average events per second) for the room's
+        # current level, using the highest level configured that's not bigger
+        # than the room.  e.g. if ratelimits are defined for levels 1, 2, and 4
+        # and the room is level 3, this will give us the ratelimit specified
+        # for 2.
+        desired_avg_per_sec = 1
+        by_level = g.live_config.get("robin_ratelimit_avg_per_sec", {})
+        for level, avg_per_sec in sorted(by_level.items(), key=lambda (x,y): x):
+            if level > room.level:
+                break
+            desired_avg_per_sec = avg_per_sec
+
+        # now figure out how many events per window that means
+        window_size = g.live_config.get("robin_ratelimit_window", 10)
+        allowed_events_per_window = int(desired_avg_per_sec * window_size)
+
+        try:
+            # now figure out how much they've actually used
+            ratelimit_key = "robin/{}".format(c.user._id36)
+            time_slice = ratelimit.get_timeslice(window_size)
+            usage = ratelimit.get_usage(ratelimit_key, time_slice)
+
+            # ratelimit them if too much
+            if usage >= allowed_events_per_window:
+                g.stats.simple_event("robin.ratelimit.exceeded")
+
+                period_end = datetime.datetime.utcfromtimestamp(time_slice.end)
+                period_end_utc = period_end.replace(tzinfo=pytz.UTC)
+                until_reset = utils.timeuntil(period_end_utc)
+                c.errors.add(errors.RATELIMIT, {"time": until_reset},
+                             field="ratelimit", code=429)
+                form.has_errors("ratelimit", errors.RATELIMIT)
+
+                return True
+
+            # or record the usage and move on
+            ratelimit.record_usage(ratelimit_key, time_slice)
+        except ratelimit.RatelimitError as exc:
+            g.log.warning("ratelimit error: %s", exc)
+        return False
+
     @validatedForm(
         VUser(),
         VModhash(),
         room=VRobinRoom("room_id"),
         message=VLength("message", max_length=140),  # TODO: do we want md?
-        # TODO: do we want a throttle/ratelimit?
     )
     def POST_message(self, form, jquery, room, message):
+        if self._has_exceeded_ratelimit(form, room):
+            return
+
         if form.has_errors("message", errors.NO_TEXT, errors.TOO_LONG):
             return
 
@@ -161,6 +207,9 @@ class RobinController(RedditController):
         vote=VOneOf("vote", VALID_VOTES),
     )
     def POST_vote(self, form, jquery, room, vote):
+        if self._has_exceeded_ratelimit(form, room):
+            return
+
         if not vote:
             # TODO: error return?
             return
