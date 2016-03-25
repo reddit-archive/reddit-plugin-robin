@@ -85,6 +85,12 @@ class Robin(Plugin):
             conditions={"function": not_in_sr})
 
     def load_controllers(self):
+        from r2.lib.pages import Reddit
         from reddit_robin.controllers import (
             RobinController,
         )
+
+        Reddit.extra_stylesheets.append('robin_global.less')
+
+        from reddit_robin.hooks import hooks
+        hooks.register_all()
