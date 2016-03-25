@@ -1,6 +1,5 @@
 import datetime
 import posixpath
-from datetime import datetime
 
 import pytz
 from pylons import request
@@ -205,7 +204,7 @@ class RobinController(RedditController):
         events.message(
             room=room,
             message=message,
-            sent_dt=datetime.utcnow(),
+            sent_dt=datetime.datetime.utcnow(),
             context=c,
             request=request,
         )
