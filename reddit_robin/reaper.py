@@ -13,6 +13,7 @@ from .models import (
     move_dead_rooms,
     RobinRoom,
 )
+from .subreddit_maker import queue_subreddit_creation
 
 
 # We do this on a 2 minute interval, since reaping and vote alerting is done
@@ -166,12 +167,8 @@ def remove_abandoners(room, users):
 def continue_room(room):
     print "continuing %s" % room
     room.continu()
-
-    websockets.send_broadcast(
-        namespace="/robin/" + room.id,
-        type="continue",
-        payload={},
-    )
+    if len(room.get_all_participants()) > 1:
+        queue_subreddit_creation(room)
 
 
 def abandon_room(room):

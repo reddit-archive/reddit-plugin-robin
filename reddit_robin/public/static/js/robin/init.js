@@ -83,6 +83,7 @@
 
       'message:continue': function(message) {
         this.room.set({ winning_vote: 'CONTINUE' });
+        this.addSystemMessage('continue the discussion at /r/' + message.body);
       },
 
       'message:no_match': function(message) {

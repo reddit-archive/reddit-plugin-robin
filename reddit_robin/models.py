@@ -4,7 +4,7 @@ import math
 from pylons import app_globals as g
 
 from r2.lib.db import tdb_cassandra
-from r2.models import Account
+from r2.models import Account, Subreddit, SubredditExists
 
 
 class RobinRoom(tdb_cassandra.UuidThing):
@@ -24,6 +24,9 @@ class RobinRoom(tdb_cassandra.UuidThing):
     _date_props = (
         'last_prompt_time',
         'last_reap_time',
+    )
+    _str_props = (
+        'subreddit_name',
     )
     _defaults = dict(
         is_alive=True,
@@ -104,6 +107,42 @@ class RobinRoom(tdb_cassandra.UuidThing):
     def continu(self):
         self.is_continued = True
         self._commit()
+
+    def _generate_sr_name(self):
+        tries = 0
+        generated_name = self.name[:20].replace('-', '_')
+
+        while tries < 20:
+            print 'generated %s for sr name candidate' % generated_name
+            yield generated_name
+            generated_name = '%s%s' % (generated_name[:18], tries)
+            tries += 1
+
+    def create_sr(self):
+        subreddit = None
+
+        print "attempting to create sr for %s" % self.name
+        for name in self._generate_sr_name():
+            try:
+                subreddit = Subreddit._new(
+                    name=name,
+                    title=self.name[:100],
+                    author_id=Account.system_user()._id,
+                    ip='0.0.0.0',
+                    type='private',
+                )
+                break
+            except SubredditExists:
+                print 'subreddit %s already exists' % name
+                continue
+        else:
+            print "gave up attempting to create sr for %s" % self.name
+            return subreddit
+
+        self.subreddit_name = subreddit.name
+        self._commit()
+
+        return subreddit
 
     @classmethod
     def merge(cls, room1, room2):
