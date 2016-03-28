@@ -230,6 +230,8 @@ class RobinController(RedditController):
             # TODO: error return?
             return
 
+        g.stats.simple_event('robin.vote.%s' % vote)
+
         room.set_vote(c.user, vote)
         websockets.send_broadcast(
             namespace="/robin/" + room.id,

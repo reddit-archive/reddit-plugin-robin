@@ -38,8 +38,7 @@ having them age in reference from their creation date. this simplifies the mergi
 
 """
 
-
-def prompt_for_voting():
+def _prompt_for_voting():
     now = datetime.now(g.tz)
     print "%s: prompting voting in rooms with less than %s remaining" % (
         now, VOTING_PROMPT_TIME)
@@ -69,7 +68,13 @@ def prompt_for_voting():
         datetime.now(g.tz), count, datetime.now(g.tz) - now)
 
 
-def reap_ripe_rooms():
+def prompt_for_voting():
+    with g.stats.get_timer('robin.prompt_for_voting'):
+        _prompt_for_voting()
+    g.stats.flush()
+
+
+def _reap_ripe_rooms():
     """Apply voting decision to each room.
 
     Users can vote to:
@@ -132,6 +137,12 @@ def reap_ripe_rooms():
     print "%s: done reaping (%s rooms took %s)" % (datetime.now(g.tz), count, datetime.now(g.tz) - now)
 
     move_dead_rooms()
+
+
+def reap_ripe_rooms():
+    with g.stats.get_timer('robin.reap_ripe_rooms'):
+        _reap_ripe_rooms()
+    g.stats.flush()
 
 
 def remove_abandoners(room, users):
