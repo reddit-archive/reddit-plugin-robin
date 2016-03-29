@@ -6,6 +6,7 @@
 
   var RobinChat = Backbone.View.extend({
     SYSTEM_USER_NAME: '[robin]',
+    MAX_USERS_TO_DISPLAY: 200,
 
     lastMessageText: null,
 
@@ -284,6 +285,7 @@
       this.userListWidget = new views.RobinUserListWidget({
         el: this.$el.find('#robinUserList')[0],
         participants: participants,
+        maxDisplayLength: this.MAX_USERS_TO_DISPLAY,
       });
 
       // set the button state in the voting widget
