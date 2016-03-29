@@ -13,8 +13,36 @@
 @color-press-5: #0083C7;
 @color-press-6: #820080;
 
+
 // borrowed from variables.less
 @screen-sm-min: 768px;
+
+// mixins from mixins.less
+.flex(@props) {
+  -webkit-flex: @props;
+  flex: @props;
+}
+
+.flex-wrap(@props) {
+  -webkit-flex-wrap: @props;
+  flex-wrap: @props;
+}
+
+.flex-direction(@props) {
+  -webkit-flex-direction: @props;
+  flex-direction: @props;
+}
+
+.display-flex() {
+  display: -webkit-flex;
+  display: flex;
+}
+
+.justify-content(@props) {
+    -webkit-justify-content: @props;
+    justify-content: @props;
+}
+
 
 body {
     background-color: @color-pale-grey;
@@ -254,14 +282,14 @@ body {
 
     // TODO import all of the less mixins for flexbox rendering
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    .display-flex();
+    .flex-direction(row);
+    .flex-wrap(wrap);
 
     .robin-chat--header {
         border-bottom: 1px solid darken(@color-pale-grey, 5%);
         box-sizing: border-box;
-        flex: 1 0 100%;
+        .flex(1 0 100%);
         padding: 15px 20px;
         
         h1 {
@@ -275,7 +303,7 @@ body {
     }
 
     .robin-chat--main {
-        flex: 1 1;
+        .flex(1 1 auto);
     }
 
     .robin-chat--window {
@@ -285,9 +313,9 @@ body {
     }
 
     .robin-chat--message-list {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
+        .display-flex();
+        .flex-direction(column);
+        .justify-content(flex-end);
         padding-top: 7px;
         padding-bottom: 8px;
         margin-left: 15px;
@@ -296,7 +324,7 @@ body {
 
     .robin-chat--sidebar {
         background-color: @robin-chat--color-sidebar;
-        flex: 0 0 @robin-chat--sidebar-width;
+        .flex(0 0 @robin-chat--sidebar-width);
     }
 
     .robin-chat--sidebar-widget {
@@ -318,7 +346,7 @@ body {
     }
 
     .robin-chat--buttons {
-        display: flex;
+        .display-flex();
     }
 
     ._vote-button-style {
@@ -368,7 +396,7 @@ body {
     .robin-chat--quit,
     .robin-chat--vote {
         // TODO prefixes
-        flex: 1 1;
+        .flex(1 1);
         transition: background-color 0.15s;
         ._vote-button-style();
     }
