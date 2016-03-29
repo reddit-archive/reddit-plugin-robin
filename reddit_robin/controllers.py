@@ -20,6 +20,7 @@ from r2.lib.validator import (
     VBoolean,
     VLength,
     VModhash,
+    VNotInTimeout,
     VOneOf,
     VUser,
 )
@@ -49,6 +50,7 @@ class RobinController(RedditController):
 
     @validate(
         VUser(),
+        VNotInTimeout(),
     )
     def GET_join(self):
         room = RobinRoom.get_room_for_user(c.user)
@@ -80,6 +82,7 @@ class RobinController(RedditController):
 
     @validate(
         VUser(),
+        VNotInTimeout(),
     )
     def GET_chat(self):
         room = RobinRoom.get_room_for_user(c.user)
@@ -187,6 +190,7 @@ class RobinController(RedditController):
 
     @validatedForm(
         VUser(),
+        VNotInTimeout(),
         VModhash(),
         room=VRobinRoom("room_id"),
         message=VLength("message", max_length=140),  # TODO: do we want md?
@@ -218,6 +222,7 @@ class RobinController(RedditController):
 
     @validatedForm(
         VUser(),
+        VNotInTimeout(),
         VModhash(),
         room=VRobinRoom("room_id"),
         vote=VOneOf("vote", VALID_VOTES),
@@ -244,6 +249,7 @@ class RobinController(RedditController):
 
     @validatedForm(
         VUser(),
+        VNotInTimeout(),
         VModhash(),
     )
     def POST_join_room(self, form, jquery):
@@ -265,7 +271,10 @@ class RobinController(RedditController):
             return
         room.remove_participants([c.user])
 
-    @json_validate(VUser())
+    @json_validate(
+        VUser(),
+        VNotInTimeout(),
+    )
     def GET_room_assignment(self, responder):
         room = RobinRoom.get_room_for_user(c.user)
         if room:
