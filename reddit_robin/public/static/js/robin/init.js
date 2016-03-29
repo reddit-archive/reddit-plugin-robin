@@ -41,11 +41,11 @@
       },
 
       'message:join': function(message) {
-        this.addUserAction(message.user, 'joined the room');
+        this._ensureUser(userName, { present: true });
       },
 
       'message:part': function(message) {
-        this.addUserAction(message.user, 'left the room');
+        this._ensureUser(userName, { present: false });
       },
 
       'message:please_vote': function(message) {
