@@ -295,14 +295,14 @@ class RobinController(RedditController):
         VModhash(),
     )
     def POST_admin_prompt(self, form, jquery):
-        prompt_for_voting(room_age_minutes=0)
+        prompt_for_voting()
 
     @validatedForm(
         VAdmin(),
         VModhash(),
     )
     def POST_admin_reap(self, form, jquery):
-        reap_ripe_rooms(room_age_minutes=0)
+        reap_ripe_rooms()
 
     @validatedForm(
         VAdmin(),
