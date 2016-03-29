@@ -160,25 +160,58 @@
   });
 
 
+  var RobinUserListOverflowIndicator = Backbone.View.extend({
+    className: 'robin-user-list-overflow-indicator',
+
+    initialize: function(options) {
+      this.render({ count: options.count || 0 })
+    },
+
+    render: function(params) {
+      this.$el.text(r._('and %(count)s more').format(params));
+    },
+  });
+
+
   var RobinUserListWidget = Backbone.View.extend({
     TEMPLATE_NAME: 'robin/robinroomparticipant',
 
+    length: 0,
+    maxDisplayLength: Infinity,
+
     initialize: function(options) {
+      if (_.isNumber(options.maxDisplayLength) && !_.isNaN(options.maxDisplayLength)) {
+        this.maxDisplayLength = options.maxDisplayLength;
+      }
+
       if (options.participants) {
         options.participants.forEach(this.addUser.bind(this));
       }
     },
 
     addUser: function(user) {
-      var $el = $(this.render(user));
-      this.$el.append($el);
+      this.length += 1;
 
-      this.listenTo(user, 'change', function() {
-        var $newEl = $(this.render(user));
-        $el.before($newEl);
-        $el.remove();
-        $el = $newEl;
-      });
+      if (this.length <= this.maxDisplayLength) {
+        var $el = $(this.render(user));
+        this.$el.append($el);
+
+        this.listenTo(user, 'change', function() {
+          var $newEl = $(this.render(user));
+          $el.before($newEl);
+          $el.remove();
+          $el = $newEl;
+        });
+      } else if (this.length === this.maxDisplayLength + 1) {
+        this.overflowIndicator = new RobinUserListOverflowIndicator({
+          count: this.length - this.maxDisplayLength,
+        });
+        this.$el.append(this.overflowIndicator.el);
+      } else {
+        this.overflowIndicator.render({
+          count: this.length - this.maxDisplayLength,
+        });
+      }
     },
 
     render: function(user) {
