@@ -1,12 +1,19 @@
 <% from r2.lib import js %>
 
 <div class="robin-home">
-    <div id="joinRobinContainer"
-            class="robin-home--thebutton-container robin--thebutton-state--locked">
-        <button class="robin-home--thebutton" id="joinRobin">
-            <span class="robin-home--thebutton-text">Participate</span>
-        </button>
-    </div>
+    % if thing.robin_heavy_load: 
+        <div id="heavyLoadRobinContainer"
+                class="robin-home--heavy-load-container">
+            Robin is currently experiencing heavy load.  Please try again later.
+        </div>
+    % else:
+        <div id="joinRobinContainer"
+                class="robin-home--thebutton-container robin--thebutton-state--locked">
+            <button class="robin-home--thebutton" id="joinRobin">
+                <span class="robin-home--thebutton-text">Participate</span>
+            </button>
+        </div>
+    % endif 
 </div>
 
 ${unsafe(js.use("robin-join"))}

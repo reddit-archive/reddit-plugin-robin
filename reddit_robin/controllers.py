@@ -5,6 +5,7 @@ import pytz
 from pylons import request
 from pylons import app_globals as g
 from pylons import tmpl_context as c
+from pylons.controllers.util import abort
 
 from r2.config import feature
 from r2.controllers import add_controller
@@ -60,7 +61,8 @@ class RobinController(RedditController):
 
         return RobinPage(
             title="robin",
-            content=RobinJoin(),
+            content=RobinJoin(robin_heavy_load=g.live_config.get(
+                'robin_heavy_load')),
         ).render()
 
     @validate(
@@ -256,6 +258,11 @@ class RobinController(RedditController):
         VModhash(),
     )
     def POST_join_room(self, form, jquery):
+        if g.live_config.get('robin_heavy_load'):
+            request.environ["usable_error_content"] = (
+                "Robin is currently experience high load.")
+            abort(503)
+
         room = RobinRoom.get_room_for_user(c.user)
         if room:
             # user is already in a room, they should get redirected by the
