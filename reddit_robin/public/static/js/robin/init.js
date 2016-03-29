@@ -7,6 +7,8 @@
   var RobinChat = Backbone.View.extend({
     SYSTEM_USER_NAME: '[robin]',
 
+    lastMessageText: null,
+
     websocketEvents: {
       'connecting': function() {
         this.addSystemAction('connecting');
@@ -86,16 +88,17 @@
       },
 
       'request:message': function() {
-        this.chatInput.disable();
+        this.chatInput.clear();
       },
 
       'invalid:message error:message': function() {
-        // TODO handle error better than this
-        this.chatInput.clear();
+        this.addSystemMessage('could not send your message:');
+        this.addSystemMessage(this.lastMessageText);
+        this.lastMessageText = null;
       },
 
       'success:message': function() {
-        this.chatInput.clear();
+        this.lastMessageText = null;
       },
 
       'change:room_name': function(model, value) {
@@ -143,6 +146,9 @@
       },
 
       'chat:message': function(messageText) {
+        if (this.lastMessageText) { return; }
+
+        this.lastMessageText = messageText;
         this.room.postMessage(messageText);
       },
 
