@@ -11,6 +11,7 @@ from r2.controllers import add_controller
 from r2.controllers.reddit_base import RedditController
 from r2.lib import websockets, ratelimit, utils
 from r2.lib.errors import errors
+from r2.lib.template_helpers import js_timestamp
 from r2.lib.validator import (
     json_validate,
     validate,
@@ -38,7 +39,7 @@ from .pages import (
 )
 from .models import RobinRoom, VALID_VOTES
 from .matchmaker import add_to_waitinglist
-from .reaper import prompt_for_voting, reap_ripe_rooms
+from .reaper import prompt_for_voting, reap_ripe_rooms, get_reap_time
 
 
 @add_controller
@@ -143,6 +144,8 @@ class RobinController(RedditController):
                 "robin_room_id": room.id,
                 "robin_websocket_url": websocket_url,
                 "robin_user_list": user_list,
+                "robin_room_date": js_timestamp(room.date),
+                "robin_room_reap_time": js_timestamp(get_reap_time(room)),
             },
         ).render()
 

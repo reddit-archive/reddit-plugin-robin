@@ -74,6 +74,10 @@ def prompt_for_voting():
     g.stats.flush()
 
 
+def get_reap_time(room):
+    return room.date + LEVEL_TIMINGS[room.level]
+
+
 def _reap_ripe_rooms():
     """Apply voting decision to each room.
 
@@ -94,12 +98,11 @@ def _reap_ripe_rooms():
     for room in RobinRoom.generate_voting_rooms():
 
         # The room isn't old enough to be merged yet
-        age = now - room.date
-        if age < LEVEL_TIMINGS[room.level]:
+        if now < get_reap_time(room):
             continue
 
         print "%s: attempting to merge room %s with age %s" % (
-            datetime.now(g.tz), room, age)
+            datetime.now(g.tz), room, now - room.date)
 
         count += 1
 
