@@ -186,7 +186,7 @@
       var models = [].slice.call(arguments, 1);
       var data = this._getPostData(models);
 
-      this.trigger('request:endpoint', this);
+      this.trigger('request:' + endpoint, this);
       this.trigger('request', this);
 
       r.ajax({
