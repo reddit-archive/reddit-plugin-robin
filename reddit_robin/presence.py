@@ -20,7 +20,7 @@ def run():
             return
 
         user_id36 = posixpath.basename(namespace)
-        room_namespace = posixpath.dirname(namespace)
+        room_namespace = posixpath.basename(posixpath.dirname(namespace))
 
         account = Account._byID36(user_id36, data=True)
         try:
