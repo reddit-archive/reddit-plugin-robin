@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from pylons import app_globals as g
 
-from r2.lib import websockets
+from r2.lib import amqp, websockets
 from r2.models import Account
 from .models import (
     NOVOTE,
@@ -72,6 +72,7 @@ def prompt_for_voting():
     with g.stats.get_timer('robin.prompt_for_voting'):
         _prompt_for_voting()
     g.stats.flush()
+    amqp.worker.join()
 
 
 def get_reap_time(room):
@@ -146,6 +147,7 @@ def reap_ripe_rooms():
     with g.stats.get_timer('robin.reap_ripe_rooms'):
         _reap_ripe_rooms()
     g.stats.flush()
+    amqp.worker.join()
 
 
 def remove_abandoners(room, users):
