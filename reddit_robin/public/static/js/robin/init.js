@@ -316,6 +316,18 @@
       this._listenToEvents(this.voteWidget, this.voteWidgetEvents);
       this._listenToEvents(this.quitWidget, this.quitWidgetEvents);
 
+      // display the reap time
+      if (!this.options.is_continued) {
+        var timeUntilReap = this.options.reap_time - Date.now();
+        var approxMinutes = Math.floor(timeUntilReap / (1000 * 60));
+
+        if (approxMinutes > 1) {
+          this.addSystemMessage('Voting will end in approximately ' + approxMinutes + ' minutes');
+        } else {
+          this.addSystemMessage('Voting will end soon');
+        }
+      }
+
       // initialize websockets. should be last!
       this.websocket = new r.WebSocket(options.websocket_url);
       this.websocket.on(this.websocketEvents);
@@ -418,6 +430,7 @@
       room_id: r.config.robin_room_id,
       websocket_url: r.config.robin_websocket_url,
       participants: r.config.robin_user_list,
+      reap_time: parseInt(r.config.robin_room_reap_time, 10),
       logged_in_username: r.config.logged,
     });
   });
