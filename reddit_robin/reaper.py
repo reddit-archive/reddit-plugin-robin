@@ -167,6 +167,7 @@ def remove_abandoners(room, users):
 def continue_room(room):
     print "continuing %s" % room
     room.continu()
+    g.log.debug('queueing subreddit creation for room %s' % room)
     queue_subreddit_creation(room)
 
 

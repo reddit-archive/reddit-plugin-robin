@@ -1,8 +1,8 @@
 from pylons import app_globals as g
 
 from r2.lib import amqp, websockets
-from r2.lib.db import queries
-from r2.models import Account, Message
+from r2.models import Account
+from r2.models.admintools import send_system_message
 
 from .models import RobinRoom
 
@@ -13,20 +13,8 @@ def send_sr_message(subreddit, recipient):
         sr_name=subreddit.name,
     )
 
-    message, inbox_rel = Message._new(
-        Account.system_user(),
-        recipient,
-        subject,
-        body,
-        ip='0.0.0.0',
-        from_sr=True,
-        sr=subreddit,
-    )
-
-    message.distinguished = 'admin'
-    message._commit()
-
-    queries.new_message(message, inbox_rel, update_modmail=False)
+    g.log.debug('sending system message to %s for %s' % (recipient, subreddit))
+    send_system_message(recipient, subject, body, add_to_sent=False)
 
 
 def run_subreddit_maker():
@@ -34,8 +22,10 @@ def run_subreddit_maker():
     def process_subreddit_maker(msg):
         room_id = msg.body
         room = RobinRoom._byID(room_id)
+        g.log.debug('creating sr for room %s' % room)
 
         subreddit = room.create_sr()
+        g.log.debug('got %s from room.create_sr()' % subreddit)
 
         participant_ids = room.get_all_participants()
         participants = [
@@ -45,9 +35,11 @@ def run_subreddit_maker():
         moderators = participants[:5]
 
         if subreddit:
+            g.log.debug('adding moderators to %s' % subreddit)
             for moderator in moderators:
                 subreddit.add_moderator(moderator)
 
+            g.log.debug('adding contributors to %s' % subreddit)
             for participant in participants:
                 # To be replaced with UserRel hacking?
                 subreddit.add_contributor(participant)
@@ -57,12 +49,14 @@ def run_subreddit_maker():
                 "body": subreddit.name,
             }
 
+            g.log.debug('broadcasting to room %s: %s' % (room, payload))
             websockets.send_broadcast(
                 namespace="/robin/" + room.id,
                 type="continue",
                 payload=payload,
             )
         else:
+            g.log.debug('subreddit creation failed for room %s' % room)
             print 'subreddit creation failed for room %s' % room.id
 
     amqp.consume_items('robin_subreddit_maker_q', process_subreddit_maker)
