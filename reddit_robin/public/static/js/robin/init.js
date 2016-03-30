@@ -203,17 +203,36 @@
         this.addSystemMessage('"/' + command + '" is not a command');
       },
 
-      'vote': function(vote) {
+      'vote': function(voteLabel) {
         if (this.room.isComplete()) {
           this.addSystemMessage('voting is complete');
-        } else if (!vote) {
-          this.addSystemMessage('use: /vote [' + r.robin.VOTE_TYPES.join(',') + ']');
-        } else if (r.robin.VOTE_TYPES.indexOf(vote.toUpperCase()) < 0) {
+          return;
+        }
+
+        var voteLabels = r.robin.VOTE_TYPES.map(function(vote) {
+          return this.getLabelFromVote(vote);
+        }, this);
+        
+        if (!voteLabel) {
+          this.addSystemMessage('use: /vote [' + voteLabels.join(',') + ']');
+          return;
+        }
+
+        var voteLabelUpper = voteLabel.toUpperCase();
+
+        if (voteLabels.indexOf(voteLabelUpper) < 0) {
+          // support passing in the actual vote values
+          voteLabelUpper = this.getLabelFromVote(voteLabelUpper);
+        }
+
+        var vote = this.getVoteFromLabel(voteLabelUpper);
+
+        if (r.robin.VOTE_TYPES.indexOf(vote) < 0) {
           this.addSystemMessage('that is not a valid vote type');
-        } else if (vote.toUpperCase() === this.currentUser.get('vote')) {
+        } else if (vote === this.currentUser.get('vote')) {
           this.addSystemMessage('that is already your vote');
         } else {
-          this.room.postVote(vote.toUpperCase());
+          this.room.postVote(vote);
           this.voteWidget.setActiveVote(vote);
         }
       },
@@ -344,6 +363,17 @@
         model: this.roomMessages,
       });
 
+      // vote label mapping
+      this._voteToLabel = {};
+      this._labelToVote = {};
+      this.voteWidget.$el.find('.' + this.voteWidget.VOTE_BUTTON_CLASS).toArray().forEach(function(el) {
+        var $el = $(el);
+        var vote = $el.val().toUpperCase();
+        var label = $el.find('.' + this.voteWidget.VOTE_LABEL_CLASS).text().toUpperCase();
+        this._voteToLabel[vote] = label;
+        this._labelToVote[label] = vote;
+      }, this);
+
       // wire up events
       this._listenToEvents(this.room, this.roomEvents);
       this._listenToEvents(this.roomParticipants, this.roomParticipantsEvents);
@@ -368,6 +398,14 @@
       this.websocket = new r.WebSocket(options.websocket_url);
       this.websocket.on(this.websocketEvents);
       this.websocket.start();
+    },
+
+    getLabelFromVote: function(vote) {
+      return this._voteToLabel[vote];
+    },
+
+    getVoteFromLabel: function(label) {
+      return this._labelToVote[label];
     },
 
     _listenToEvents: function(other, eventMap) {
@@ -453,8 +491,9 @@
         present: true,
       };
       var user = this._ensureUser(userName, setAttrs);
+      var voteLabel = this.getLabelFromVote(vote) || vote;
 
-      this.addUserAction(userName, 'voted to ' + vote);
+      this.addUserAction(userName, 'voted to ' + voteLabel);
     },
   });
 

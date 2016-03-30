@@ -123,6 +123,7 @@
 
   var RobinVoteWidget = RobinButtonWidget.extend({
     VOTE_BUTTON_CLASS: 'robin-chat--vote',
+    VOTE_LABEL_CLASS: 'robin-chat--vote-label',
 
     events: {
       'click .robin-chat--vote': '_onVote',
