@@ -1,5 +1,10 @@
 <%inherit file="reddit.html"/>
 
+<%def name="pagemeta()">
+  ${parent.pagemeta()}
+  <meta name="viewport" content="width=device-width">
+</%def>
+
 <%def name="javascript_bottom()">
     <% from r2.lib import js %>
     ${parent.javascript_bottom()}
