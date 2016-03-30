@@ -171,7 +171,7 @@ def continue_room(room):
 
     if subreddit:
         payload = {
-            "body": "Continue the discussion at /r/%s" % subreddit.name,
+            "body": subreddit.name,
         }
 
     websockets.send_broadcast(
