@@ -27,14 +27,14 @@ def run_subreddit_maker():
         subreddit = room.create_sr()
         print 'got %s from room.create_sr()' % subreddit
 
-        participant_ids = room.get_all_participants()
-        participants = [
-            Account._byID(participant_id)
-            for participant_id in participant_ids
-        ]
-        moderators = participants[:5]
-
         if subreddit:
+            participant_ids = room.get_all_participants()
+            participants = [
+                Account._byID(participant_id)
+                for participant_id in participant_ids
+            ]
+            moderators = participants[:5]
+
             print 'adding moderators to %s' % subreddit
             for moderator in moderators:
                 subreddit.add_moderator(moderator)
