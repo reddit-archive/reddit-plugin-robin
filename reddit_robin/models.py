@@ -131,7 +131,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
             try:
                 subreddit = Subreddit._new(
                     name=name,
-                    title=self.name,
+                    title=self.name[:100],
                     author_id=moderators[0]._id,
                     ip='127.0.0.1',
                     type='private',
