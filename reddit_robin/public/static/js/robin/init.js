@@ -127,18 +127,14 @@
 
         if (vote === 'ABANDON') {
           this.addSystemAction('room has been abandoned');
+          this.transitionRefresh();
         } else if (vote === 'CONTINUE') {
           this.addSystemAction('room has been continued');
           this.quitWidget.show();
         } else if (vote === 'INCREASE') {
           this.addSystemAction('room has been increased');
           this.addSystemAction('merging with other room...');
-
-          var timeout = 1000 + Math.floor(Math.random() * 4000);
-          this.chatWindow.startJuicyPoppin();
-          setTimeout(function() {
-            $.refresh()
-          }, timeout);
+          this.transitionRefresh();
         }
       },
 
@@ -410,6 +406,14 @@
       this.websocket = new r.WebSocket(options.websocket_url);
       this.websocket.on(this.websocketEvents);
       this.websocket.start();
+    },
+
+    transitionRefresh: function() {
+      var timeout = 1000 + Math.floor(Math.random() * 4000);
+      this.chatWindow.startJuicyPoppin();
+      setTimeout(function() {
+        $.refresh();
+      }, timeout);
     },
 
     getLabelFromVote: function(vote) {
