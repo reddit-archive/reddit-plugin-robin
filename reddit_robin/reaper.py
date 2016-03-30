@@ -19,13 +19,13 @@ from .models import (
 # every minute.  This should guarantee a warning at least 1 minute before
 # each room is reaped.  This could still be a problem if the overall loop time
 # is bigger than a minute.
-VOTING_PROMPT_TIME = timedelta(minutes=2)
+VOTING_PROMPT_TIME = timedelta(minutes=1)
 
 # How long each room will last at each level before merging happens.
-DEFAULT_LEVEL_TIME = timedelta(minutes=15)
+DEFAULT_LEVEL_TIME = timedelta(minutes=4)
 LEVEL_TIMINGS = defaultdict(lambda: DEFAULT_LEVEL_TIME)
 LEVEL_TIMINGS.update({
-    0: timedelta(minutes=5),
+    0: timedelta(minutes=2),
 })
 
 
