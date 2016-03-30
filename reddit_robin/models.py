@@ -181,7 +181,7 @@ def move_dead_rooms():
     start = datetime.now(g.tz)
     for _id, columns in RobinRoom._cf.get_range():
         room = RobinRoom._from_serialized_columns(_id, columns)
-        room_is_dead = not room_is_alive
+        room_is_dead = not room.is_alive
         room_is_empty = room.is_continued and not room.get_all_participants()
 
         if room_is_dead or room_is_empty:
