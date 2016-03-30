@@ -234,7 +234,7 @@ body {
     @robin-chat--sidebar-width: 300px;
     @robin-chat--color-title: @color-grey;
     @robin-chat--color-sidebar: @color-pale-grey;
-    @robin-chat--color-vote-default: darken(@color-off-white, 5%);
+    @robin-chat--color-vote-default: @color-white;
     @robin-chat--color-vote-hover: @color-off-white;
     @robin-chat--color-vote-active: @color-grey;
     @robin-chat--color-vote-down: darken(@color-grey, 5%);
@@ -312,13 +312,17 @@ body {
         appearance: none;
         background-color: @robin-chat--color-vote-default;
         border: none;
+        border-radius: 2px;
+        box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.20);
+        color: lighten(@robin--color-text-default, 10%);
         display: block;
-        line-height: 30px;
+        font-size: 13px;
+        line-height: 20px;
         margin: 5px;
-        padding-bottom: 10px;
-        padding-top: 10px;
+        padding-bottom: 5px;
+        padding-top: 5px;
         text-align: center;
-        text-transform: uppercase;
+        text-transform: capitalize;
 
         &:first-child {
             margin-left: 0;
@@ -337,13 +341,14 @@ body {
         }
 
         &:focus {
-            background-color: @robin-chat--color-vote-active;
-            outline: 1px solid lighten(@robin-chat--color-vote-active, 10%);
+            background-color: darken(@robin-chat--color-vote-hover, 5%);
+            outline: 1px solid @robin-chat--color-vote-default;
         }
 
         &.robin--active,
         &:active {
-            background-color: @robin-chat--color-vote-down;
+            background-color: darken(@robin-chat--color-sidebar, 10%);
+            box-shadow: 0px 1px 1px 0px rgba(0,0,0,0.20) inset;
         }
     }
 
@@ -353,6 +358,11 @@ body {
         flex: 1 1;
         transition: background-color 0.15s;
         ._vote-button-style();
+    }
+
+    .robin-chat--vote .robin--icon {
+        display: block;
+        margin: auto;
     }
 
     .robin-chat--notification-widget {
@@ -447,112 +457,114 @@ body {
         }
     }
 
+}
+
+
+.robin--icon {
+    ._robin-icon-unvoted();
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+&.robin--vote-class--abandon {
     .robin--icon {
-        ._robin-icon-unvoted();
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        vertical-align: middle;
-        margin-right: 5px;
+        ._robin-icon-voted-abandon();
+    }
+}
+
+&.robin--vote-class--continue {
+    .robin--icon {
+        ._robin-icon-voted-continue();
+    }
+}
+
+
+&.robin--vote-class--increase {
+    .robin--icon {
+        ._robin-icon-voted-increase();
+    }
+}
+
+&.robin--presence-class--away {
+    .robin--icon {
+        ._robin-icon-unvoted-away();
     }
 
     &.robin--vote-class--abandon {
         .robin--icon {
-            ._robin-icon-voted-abandon();
+            ._robin-icon-voted-abandon-away();
         }
     }
 
     &.robin--vote-class--continue {
         .robin--icon {
-            ._robin-icon-voted-continue();
+            ._robin-icon-voted-continue-away();
+        }
+    }
+
+    &.robin--vote-class--increase {
+        .robin--icon {
+            ._robin-icon-voted-increase-away();
+        }
+    }
+}
+
+@media
+only screen and (min-resolution: 2dppx),
+only screen and (-webkit-min-device-pixel-ratio: 2) {
+    .robin--icon {
+        /* fixes HDPI icons in dev */
+        background-size: 100%; 
+        ._robin-icon-unvoted_2x();
+    }
+
+    &.robin--vote-class--abandon {
+        .robin--icon {
+            ._robin-icon-voted-abandon_2x();
+        }
+    }
+
+    &.robin--vote-class--continue {
+        .robin--icon {
+            ._robin-icon-voted-continue_2x();
         }
     }
 
 
     &.robin--vote-class--increase {
         .robin--icon {
-            ._robin-icon-voted-increase();
+            ._robin-icon-voted-increase_2x();
         }
     }
 
     &.robin--presence-class--away {
         .robin--icon {
-            ._robin-icon-unvoted-away();
+            ._robin-icon-unvoted-away_2x();
         }
 
         &.robin--vote-class--abandon {
             .robin--icon {
-                ._robin-icon-voted-abandon-away();
+                ._robin-icon-voted-abandon-away_2x();
             }
         }
 
         &.robin--vote-class--continue {
             .robin--icon {
-                ._robin-icon-voted-continue-away();
+                ._robin-icon-voted-continue-away_2x();
             }
         }
 
         &.robin--vote-class--increase {
             .robin--icon {
-                ._robin-icon-voted-increase-away();
+                ._robin-icon-voted-increase-away_2x();
             }
         }
     }
-
-    @media
-    only screen and (min-resolution: 2dppx),
-    only screen and (-webkit-min-device-pixel-ratio: 2) {
-        .robin--icon {
-            /* fixes HDPI icons in dev */
-            background-size: 100%; 
-            ._robin-icon-unvoted_2x();
-        }
-
-        &.robin--vote-class--abandon {
-            .robin--icon {
-                ._robin-icon-voted-abandon_2x();
-            }
-        }
-
-        &.robin--vote-class--continue {
-            .robin--icon {
-                ._robin-icon-voted-continue_2x();
-            }
-        }
-
-
-        &.robin--vote-class--increase {
-            .robin--icon {
-                ._robin-icon-voted-increase_2x();
-            }
-        }
-
-        &.robin--presence-class--away {
-            .robin--icon {
-                ._robin-icon-unvoted-away_2x();
-            }
-
-            &.robin--vote-class--abandon {
-                .robin--icon {
-                    ._robin-icon-voted-abandon-away_2x();
-                }
-            }
-
-            &.robin--vote-class--continue {
-                .robin--icon {
-                    ._robin-icon-voted-continue-away_2x();
-                }
-            }
-
-            &.robin--vote-class--increase {
-                .robin--icon {
-                    ._robin-icon-voted-increase-away_2x();
-                }
-            }
-        }
-    }
-
 }
+
 
 ._robin-icon-unvoted() {
     background-image: url('../robin-icons/robin-icon-unvoted.png'); /* SPRITE */
