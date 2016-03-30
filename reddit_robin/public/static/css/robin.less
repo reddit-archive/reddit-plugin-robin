@@ -303,7 +303,9 @@ body {
     }
 
     .robin-chat--main {
-        .flex(1 1 auto);
+        .flex(1 1);
+        // fixes flex layout in Safari :(
+        border-right: 1px solid transparent;
     }
 
     .robin-chat--window {
@@ -454,6 +456,7 @@ body {
     font-size: 14px;
     line-height: 15px;
     padding: 2px 5px 3px;
+    word-break: break-all;
 
     .robin-message--from {
         transition: opacity 300ms ease 0.5s;
