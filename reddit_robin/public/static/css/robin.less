@@ -396,14 +396,18 @@ body {
     padding: 2px 5px 3px;
 
     .robin-message--from {
+        transition: opacity 300ms ease 0.5s;
         font-weight: 500;
         margin-left: 5px;
+        opacity: 1;
     }
 
     .robin-message--timestamp {
+        transition: opacity 300ms ease 1s;
         color: @robin--color-text-system;
         font-size: 11px;
         font-weight: 300;
+        opacity: 1;
     }
 
     .robin-message--message {
@@ -426,7 +430,30 @@ body {
             font-style: italic;
         }
     }
+
+    .robin-message--character {
+        transition: all 200ms;
+        transform: translate(0, 0);
+        opacity: 1;
+        display: inline-block;
+    }
 }
+
+.robin--animation-class--juicy-pop {
+    .robin-message--character {
+        transform: translate(0, 20px);
+        opacity: 0;
+    }
+
+    .robin-message--timestamp {
+        opacity: 0;
+    }
+
+    .robin-message--from {
+        opacity: 0;
+    }
+}
+
 
 
 .robin-room-participant {

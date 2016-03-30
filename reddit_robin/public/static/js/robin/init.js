@@ -118,8 +118,12 @@
         } else if (vote === 'INCREASE') {
           this.addSystemAction('room has been increased');
           this.addSystemAction('merging with other room...');
-          // TODO: add some jitter before refresh to avoid thundering herd
-          $.refresh()
+
+          var timeout = 1000 + Math.floor(Math.random() * 4000);
+          this.chatWindow.startJuicyPoppin();
+          setTimeout(function() {
+            $.refresh()
+          }, timeout);
         }
       },
 
@@ -213,6 +217,10 @@
 
       'leave_room': function() {
         this.room.postLeaveRoom();
+      },
+
+      'clear': function() {
+        this.chatWindow.startJuicyPoppin();
       },
     },
 
