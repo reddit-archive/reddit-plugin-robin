@@ -119,7 +119,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
     def _create_sr(self):
         subreddit = None
 
-        participant_ids = list(self.get_all_participants())
+        participant_ids = self.get_all_participants()
         participants = [
             Account._byID(participant_id)
             for participant_id in participant_ids
