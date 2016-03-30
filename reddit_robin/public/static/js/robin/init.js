@@ -231,6 +231,25 @@
       'leave_room': function() {
         this.room.postLeaveRoom();
       },
+
+      'remind': function(time /* ,args */) {
+        time = parseInt(time, 10);
+        var timerMessage = [].slice.call(arguments, 1).join(' ');
+
+        if (_.isNaN(time) || timerMessage.length === 0) {
+          this.addSystemMessage('use: /remind <seconds> <message>');
+          return;
+        }
+
+        var userName = this.currentUser.get('name');
+        var messageText = userName + ': ' + timerMessage;
+
+        setTimeout(function() {
+          this.addSystemMessage(messageText.slice(0, models.RobinMessage.MAX_LENGTH));
+        }.bind(this), time * 1000);
+
+        this.addSystemAction('set timer for ' + time + ' seconds from now');
+      },
     },
 
     initialize: function(options) {
