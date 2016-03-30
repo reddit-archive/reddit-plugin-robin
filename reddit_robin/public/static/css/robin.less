@@ -712,6 +712,11 @@ only screen and (-webkit-min-device-pixel-ratio: 2) {
 
 
 @media all and (max-width: @screen-sm-min) {
+  // abandon flex
+  .robin-chat {
+    display: block;
+  }
+
   .robin-chat--window {
     max-height: 200px;
   }
