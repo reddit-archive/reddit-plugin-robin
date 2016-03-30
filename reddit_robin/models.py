@@ -132,7 +132,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
                 subreddit = Subreddit._new(
                     name=name,
                     title=self.name[:100],
-                    author_id=moderators[0]._id,
+                    author_id=Account.system_user()._id,
                     ip='127.0.0.1',
                     type='private',
                 )
