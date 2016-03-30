@@ -123,18 +123,20 @@
 
   var RobinVoteWidget = RobinButtonWidget.extend({
     VOTE_BUTTON_CLASS: 'robin-chat--vote',
+    VOTE_LABEL_CLASS: 'robin-chat--vote-label',
 
     events: {
       'click .robin-chat--vote': '_onVote',
     },
 
     _onVote: function(e) {
+      var target = $(e.target).closest('button')[0];
       if (this.isHidden) { return; }
-      if (e.target === this.currentTarget) { return; }
+      if (target === this.currentTarget) { return; }
 
-      var value = e.target.value;
+      var value = target.value;
       this.trigger('vote', value);
-      this._setActiveTarget(e.target);
+      this._setActiveTarget(target);
     },
 
     setActiveVote: function(voteType) {
