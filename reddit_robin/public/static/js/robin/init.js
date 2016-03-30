@@ -249,6 +249,31 @@
         }
       },
 
+      'whois': function(userName) {
+        var user = this.roomParticipants.get(userName);
+
+        if (!user) {
+          this.addSystemMessage('There is no user by that name in the room');
+        } else if (user === this.currentUser) {
+          this.addSystemMessage('That is you');
+        } else {
+          var presence = user.get('present') ? 'present' : 'away';
+
+          if (user.hasVoted()) {
+            this.addSystemMessage('%(userName)s is %(presence)s and has voted to %(vote)s'.format({
+              userName: userName,
+              presence: presence,
+              vote: user.get('vote'),
+            }));
+          } else {
+            this.addSystemMessage('%(userName)s is %(presence)s and has not voted'.format({
+              userName: userName,
+              presence: presence,
+            }));
+          }
+        }
+      },
+
       'leave_room': function() {
         this.room.postLeaveRoom();
       },
