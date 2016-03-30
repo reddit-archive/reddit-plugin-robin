@@ -13,7 +13,7 @@ def send_sr_message(subreddit, recipient):
         sr_name=subreddit.name,
     )
 
-    g.log.debug('sending system message to %s for %s' % (recipient, subreddit))
+    print 'sending system message to %s for %s' % (recipient, subreddit)
     send_system_message(recipient, subject, body, add_to_sent=False)
 
 
@@ -22,10 +22,10 @@ def run_subreddit_maker():
     def process_subreddit_maker(msg):
         room_id = msg.body
         room = RobinRoom._byID(room_id)
-        g.log.debug('creating sr for room %s' % room)
+        print 'creating sr for room %s' % room
 
         subreddit = room.create_sr()
-        g.log.debug('got %s from room.create_sr()' % subreddit)
+        print 'got %s from room.create_sr()' % subreddit
 
         participant_ids = room.get_all_participants()
         participants = [
@@ -35,11 +35,11 @@ def run_subreddit_maker():
         moderators = participants[:5]
 
         if subreddit:
-            g.log.debug('adding moderators to %s' % subreddit)
+            print 'adding moderators to %s' % subreddit
             for moderator in moderators:
                 subreddit.add_moderator(moderator)
 
-            g.log.debug('adding contributors to %s' % subreddit)
+            print 'adding contributors to %s' % subreddit
             for participant in participants:
                 # To be replaced with UserRel hacking?
                 subreddit.add_contributor(participant)
@@ -49,14 +49,12 @@ def run_subreddit_maker():
                 "body": subreddit.name,
             }
 
-            g.log.debug('broadcasting to room %s: %s' % (room, payload))
             websockets.send_broadcast(
                 namespace="/robin/" + room.id,
                 type="continue",
                 payload=payload,
             )
         else:
-            g.log.debug('subreddit creation failed for room %s' % room)
             print 'subreddit creation failed for room %s' % room.id
 
     amqp.consume_items('robin_subreddit_maker_q', process_subreddit_maker)
