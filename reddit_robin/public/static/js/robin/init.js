@@ -59,8 +59,21 @@
       },
 
       'message:users_abandoned': function(message) {
-        // TODO: how to kick the users and prevent them from receiving
-        // additional messages?
+        if (!message.users || !message.users.length) { return; }
+        var currentUserName = this.currentUser.get('name');
+
+        if (message.users.indexOf(this.currentUser.get('name')) >= 0) {
+          this.addSystemAction('abandoning...');
+          $.refresh();
+          return;
+        }
+
+        var abandoned = 0;
+        message.users.forEach(function(userName) {
+          this.roomParticipants.remove(userName);
+          abandoned += 1;
+        }, this);
+        this.addSystemAction(abandoned + ' users abandoned');
       },
 
       'message:abandon': function(message) {
@@ -131,6 +144,10 @@
     roomParticipantsEvents: {
       add: function(user, userList) {
         this.userListWidget.addUser(user);
+      },
+
+      remove: function(user, userList) {
+        this.userListWidget.removeUser(user);
       },
     },
 

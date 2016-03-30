@@ -165,6 +165,8 @@
     TEMPLATE_NAME: 'robin/robinroomparticipant',
 
     initialize: function(options) {
+      this.userNamesToEl = {};
+
       if (options.participants) {
         options.participants.forEach(this.addUser.bind(this));
       }
@@ -173,13 +175,24 @@
     addUser: function(user) {
       var $el = $(this.render(user));
       this.$el.append($el);
+      this.userNamesToEl[user.get('name')] = $el;
 
       this.listenTo(user, 'change', function() {
         var $newEl = $(this.render(user));
         $el.before($newEl);
         $el.remove();
         $el = $newEl;
+        this.userNamesToEl[user.get('name')] = $el;
       });
+    },
+
+    removeUser: function(user) {
+      this.stopListening(user);
+      var $el = this.userNamesToEl[user.get('name')];
+
+      if (!$el) { return; }
+
+      $el.remove();
     },
 
     render: function(user) {
