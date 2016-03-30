@@ -130,11 +130,12 @@
 
     _onVote: function(e) {
       if (this.isHidden) { return; }
-      if (e.target === this.currentTarget) { return; }
+      var target = $(e.target).closest('button')[0];
+      if (target === this.currentTarget) { return; }
 
-      var value = e.target.value;
+      var value = target.value;
       this.trigger('vote', value);
-      this._setActiveTarget(e.target);
+      this._setActiveTarget(target);
     },
 
     setActiveVote: function(voteType) {
