@@ -285,8 +285,6 @@ class ParticipantPresenceByRoom(tdb_cassandra.View):
     _read_consistency_level = tdb_cassandra.CL.QUORUM
     _write_consistency_level = tdb_cassandra.CL.QUORUM
 
-    _ttl = timedelta(minutes=2)
-
     @classmethod
     def _rowkey(cls, room):
         return room._id
