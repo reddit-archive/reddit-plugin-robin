@@ -25,6 +25,9 @@ class RobinRoom(tdb_cassandra.UuidThing):
         'last_prompt_time',
         'last_reap_time',
     )
+    _str_props = (
+        'subreddit_name',
+    )
     _defaults = dict(
         is_alive=True,
         is_abandoned=False,
@@ -142,6 +145,9 @@ class RobinRoom(tdb_cassandra.UuidThing):
         else:
             print "gave up attempting to create sr for %s" % self.name
             return subreddit
+
+        self.subreddit_name = subreddit.name
+        self._commit()
 
         for moderator in moderators:
             subreddit.add_moderator(moderator)
