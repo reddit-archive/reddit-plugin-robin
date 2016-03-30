@@ -13,6 +13,9 @@
 @color-press-5: #0083C7;
 @color-press-6: #820080;
 
+// borrowed from variables.less
+@screen-sm-min: 768px;
+
 body {
     background-color: @color-pale-grey;
 }
@@ -626,4 +629,30 @@ body {
 
 ._robin-icon-voted-increase-away_2x() {
     background-image: url('../robin-icons/robin-icon-voted-increase-away_2x.png'); /* SPRITE pixel-ratio=2 */
+}
+
+
+@media all and (max-width: @screen-sm-min) {
+  .robin-chat--window {
+    max-height: 200px;
+  }
+
+  .robin-chat--buttons {
+    text-align: center;
+  }
+
+  .robin-chat--vote {
+    display: inline-block !important;
+  }
+
+  ////////// hacks to clean up the header and footer until the rest of reddit is responsive
+  #sr-header-area,
+  #header-bottom-right {
+      display: none;
+  }
+
+  .footer {
+      display:none;
+  }
+  //////////
 }
