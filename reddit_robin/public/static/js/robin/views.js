@@ -4,6 +4,13 @@
   var RobinChatWindow = Backbone.View.extend({
     TEMPLATE_NAME: 'robin/robinmessage',
 
+    CHAR_CLASS: 'robin-message--character',
+    SPACE_CHAR_CLASS: 'robin-message--space-character',
+    JUICE_CLASS: 'robin--animation-class--juicy-pop',
+
+    JUICY_POP_INTERVAL: 200,
+    _juicyPopInterval: null,
+
     initialize: function() {
       this.$chatList = this.$el.find('#robinChatMessageList');
       this.lastMessageFrom = null;
@@ -38,6 +45,60 @@
 
     scrollToRecent: function() {
       this.el.scrollTop = this.el.scrollHeight;
+    },
+
+    juicyPop: function() {
+      var $el = this.$chatList.children(':not(.' + this.JUICE_CLASS + ')').last();
+      if (!$el.length) { return false; }
+
+      this.lastMessageFrom = null;
+
+      var $message = $el.find('.robin-message--message');
+      var messageText = $message.text();
+      var charElements = [];
+      var $char;
+
+      for (var i = 0; i < messageText.length; i++) {
+        $char = $($.parseHTML('<span></span>'));
+        $char.text(messageText[i]);
+        if (messageText[i] !== ' ') {
+          $char.addClass(this.CHAR_CLASS);
+        } else {
+          $char.addClass(this.SPACE_CHAR_CLASS);
+        }
+        $char.css({
+          'transition-delay': Math.floor(Math.random() * 1000) + 'ms',
+        })
+        charElements.push($char);
+      }
+
+      $message.empty().append(charElements);
+
+      setTimeout(function() {
+        $el.addClass(this.JUICE_CLASS);
+      }.bind(this), 10);
+
+      setTimeout(function() {
+        $el.remove();
+      }.bind(this), 1500);
+
+      return true;
+    },
+
+    startJuicyPoppin: function() {
+      console.log('started');
+      this._juicyPopInterval = setInterval(function() {
+        console.log('poppin');
+        var popped = this.juicyPop();
+        if (!popped) {
+          this.stopJuicyPoppin();
+        }
+      }.bind(this), this.JUICY_POP_INTERVAL);
+    },
+
+    stopJuicyPoppin: function() {
+      console.log('stopped');
+      this._juicyPopInterval = clearInterval(this._juicyPopInterval);
     },
   });
 
