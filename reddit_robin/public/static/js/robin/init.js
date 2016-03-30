@@ -87,7 +87,7 @@
       },
 
       'message:no_match': function(message) {
-        this.addSystemAction('no compatible room found for matching');
+        this.addSystemAction('no compatible room found for matching, we will count votes and check again for a match in 1 minute.');
       },
 
       'message:updated_name': function(message) {
@@ -203,6 +203,20 @@
     chatCommands: {
       'unknown': function(command) {
         this.addSystemMessage('"/' + command + '" is not a command');
+      },
+
+      'help': function() {
+        this.addSystemMessage('Welcome to Robin.');
+        this.addSystemMessage('Be sure to use the buttons in the sidebar to vote on the future of the room before the polls are closed.');
+        this.addSystemMessage('Non-votes and abstentions will be counted as votes to abandon.');
+        this.addSystemMessage('We do hope you enjoy the discussion.');
+      },
+
+      'commands': function() {
+        this.addSystemMessage('/vote abandon - vote to abandon');
+        this.addSystemMessage('/vote stay - vote to stay');
+        this.addSystemMessage('/vote grow - vote to grow');
+        this.addSystemMessage('/whois <user_in_room> - provide information about <user_in_room>');
       },
 
       'vote': function(voteLabel) {
@@ -414,6 +428,9 @@
       this._listenToEvents(this.chatInput, this.chatInputEvents);
       this._listenToEvents(this.voteWidget, this.voteWidgetEvents);
       this._listenToEvents(this.quitWidget, this.quitWidgetEvents);
+
+      // Welcome message
+      this.addSystemMessage('Welcome to robin.  Please type /help or /commands for more information.');
 
       // display the reap time
       if (!this.options.is_continued) {
