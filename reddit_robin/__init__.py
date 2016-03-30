@@ -50,6 +50,7 @@ class Robin(Plugin):
         queues.declare({
             "robin_presence_q": MessageQueue(),
             "robin_waitinglist_q": MessageQueue(bind_to_self=True),
+            "robin_subreddit_maker_q": MessageQueue(bind_to_self=True),
         })
 
         queues.robin_presence_q << (

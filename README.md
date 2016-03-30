@@ -40,6 +40,7 @@ Then, enable the consumers:
 cd ~/consumer-counts.d
 echo 1 > robin_presence_q
 echo 1 > robin_waitinglist_q
+echo 1 > robin_subreddit_maker_q
 sudo initctl emit reddit-start
 ```
 

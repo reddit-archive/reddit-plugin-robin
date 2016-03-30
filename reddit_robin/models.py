@@ -108,8 +108,6 @@ class RobinRoom(tdb_cassandra.UuidThing):
         self.is_continued = True
         self._commit()
 
-        return self._create_sr()
-
     def _generate_sr_name(self):
         tries = 0
         generated_name = self.name[:20].replace('-', '_')
@@ -119,15 +117,8 @@ class RobinRoom(tdb_cassandra.UuidThing):
             generated_name = '%s%s' % (generated_name[:18], tries)
             tries += 1
 
-    def _create_sr(self):
+    def create_sr(self):
         subreddit = None
-
-        participant_ids = self.get_all_participants()
-        participants = [
-            Account._byID(participant_id)
-            for participant_id in participant_ids
-        ]
-        moderators = participants[:5]
 
         print "attempting to create sr for %s" % self.name
         for name in self._generate_sr_name():
@@ -136,7 +127,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
                     name=name,
                     title=self.name[:100],
                     author_id=Account.system_user()._id,
-                    ip='127.0.0.1',
+                    ip='0.0.0.0',
                     type='private',
                 )
                 break
@@ -148,13 +139,6 @@ class RobinRoom(tdb_cassandra.UuidThing):
 
         self.subreddit_name = subreddit.name
         self._commit()
-
-        for moderator in moderators:
-            subreddit.add_moderator(moderator)
-
-        for participant in participants:
-            # To be replaced with UserRel hacking?
-            subreddit.add_contributor(participant)
 
         return subreddit
 
