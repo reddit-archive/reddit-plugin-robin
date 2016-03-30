@@ -158,7 +158,7 @@ def remove_abandoners(room, users):
         namespace="/robin/" + room.id,
         type="users_abandoned",
         payload={
-            "users": [user._id36 for user in users],
+            "users": [user.name for user in users],
         },
     )
 
