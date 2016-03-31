@@ -170,6 +170,8 @@ def continue_room(room):
     if len(room.get_all_participants()) > 1:
         queue_subreddit_creation(room)
 
+    g.stats.simple_event('robin.reaper.continue')
+
 
 def abandon_room(room):
     print "abandoning %s" % room
@@ -180,6 +182,8 @@ def abandon_room(room):
         type="abandon",
         payload={},
     )
+
+    g.stats.simple_event('robin.reaper.abandon')
 
 
 def merge_rooms(room1, room2):
@@ -194,6 +198,8 @@ def merge_rooms(room1, room2):
                 "destination": new_room.id,
             },
         )
+
+    g.stats.simple_event('robin.reaper.merge')
 
 
 def alert_no_match(room):

@@ -39,6 +39,10 @@ class RobinRoom(tdb_cassandra.UuidThing):
     def create(cls, level):
         room = cls(level=level)
         room._commit()
+
+        g.stats.simple_event('robin.room.make_new')
+        g.stats.flush()
+
         return room
 
     @classmethod
@@ -227,6 +231,8 @@ def move_dead_rooms():
             RobinRoomDead._cf.insert(_id, columns)
             RobinRoom._cf.remove(_id)
             count += 1
+    g.stats.simple_event('robin.room.move_dead', count)
+    g.stats.flush()
     print "moved %s rooms in %s" % (count, datetime.now(g.tz) - start)
 
 
