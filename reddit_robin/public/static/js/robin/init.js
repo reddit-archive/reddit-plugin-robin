@@ -329,6 +329,7 @@
       // initialize some child views 
       this.chatInput = new views.RobinChatInput({
         el: this.$el.find('#robinChatInput')[0],
+        collection: this.roomParticipants,
       });
 
       this.chatWindow = new views.RobinChatWindow({
