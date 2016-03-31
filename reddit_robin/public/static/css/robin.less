@@ -285,26 +285,29 @@ body {
     @robin-chat--color-vote-active: @color-grey;
     @robin-chat--color-vote-down: darken(@color-grey, 5%);
 
-    // TODO import all of the less mixins for flexbox rendering
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    .display-flex();
-    .flex-direction(row);
-    .flex-wrap(wrap);
 
     .robin-chat--header {
         border-bottom: 1px solid darken(@color-pale-grey, 5%);
         box-sizing: border-box;
-        .flex(1 0 100%);
         padding: 15px 20px;
         
         h1 {
             line-height: 20px;
             margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
 
     .robin-chat--room-name {
         color: @robin-chat--color-title;
+    }
+
+    .robin-chat--body {
+        .display-flex();
+        .flex-direction(row);
     }
 
     .robin-chat--main {
@@ -724,7 +727,7 @@ only screen and (-webkit-min-device-pixel-ratio: 2) {
 
 @media all and (max-width: @screen-sm-min) {
   // abandon flex
-  .robin-chat {
+  .robin-chat .robin-chat--body {
     display: block;
   }
 

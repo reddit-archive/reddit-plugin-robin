@@ -6,71 +6,73 @@
         <h1>chat in &#32;<span class="robin-chat--room-name">${thing.room.name}</span></h1>
     </header>
 
-    <div class="robin-chat--main">
-        <div id="robinChatWindow" class="robin-chat--window">
-            <div id="robinChatMessageList" class="robin-chat--message-list"></div>
+    <div class="robin-chat--body">
+        <div class="robin-chat--main">
+            <div id="robinChatWindow" class="robin-chat--window">
+                <div id="robinChatMessageList" class="robin-chat--message-list"></div>
+            </div>
+
+            <div id="robinChatInput" class="robin-chat--input">
+                <form id="robinSendMessage" action="/api/robin/${thing.room._id}/message" method="POST">
+                    <div class="text-counter">
+                        <span class="text-counter-display"></span>&#32;
+                        ${_("remaining")}
+                    </div>
+                    <input type="text"
+                            class="c-form-control text-counter-input"
+                            name="message"
+                            autocomplete="off"
+                            maxlength="140"
+                            required>
+                    <input type="submit" value="send">
+                    <span class="status error" style="display:none"></span>
+                </form>
+            </div>
         </div>
 
-        <div id="robinChatInput" class="robin-chat--input">
-            <form id="robinSendMessage" action="/api/robin/${thing.room._id}/message" method="POST">
-                <div class="text-counter">
-                    <span class="text-counter-display"></span>&#32;
-                    ${_("remaining")}
+        <div class="robin-chat--sidebar">
+            <div id="robinVoteWidget" class="robin-chat--sidebar-widget robin-chat--vote-widget" hidden>
+                <div class="robin-chat--buttons">
+                    <button class="robin-chat--vote robin-chat--vote-abandon robin--vote-class--abandon"
+                            value="ABANDON">
+                        <span class="robin--icon"></span>
+                        <span class="robin-chat--vote-label">abandon</span>
+                    </button>
+                    <button class="robin-chat--vote robin-chat--vote-continue robin--vote-class--continue"
+                            value="CONTINUE">
+                        <span class="robin--icon"></span>
+                        <span class="robin-chat--vote-label">stay</span>
+                    </button>
+                    <button class="robin-chat--vote robin-chat--vote-increase robin--vote-class--increase"
+                            value="INCREASE">
+                        <span class="robin--icon"></span>
+                        <span class="robin-chat--vote-label">grow</span>
+                    </button>
                 </div>
-                <input type="text"
-                        class="c-form-control text-counter-input"
-                        name="message"
-                        autocomplete="off"
-                        maxlength="140"
-                        required>
-                <input type="submit" value="send">
-                <span class="status error" style="display:none"></span>
-            </form>
-        </div>
-    </div>
-
-    <div class="robin-chat--sidebar">
-        <div id="robinVoteWidget" class="robin-chat--sidebar-widget robin-chat--vote-widget" hidden>
-            <div class="robin-chat--buttons">
-                <button class="robin-chat--vote robin-chat--vote-abandon robin--vote-class--abandon"
-                        value="ABANDON">
-                    <span class="robin--icon"></span>
-                    <span class="robin-chat--vote-label">abandon</span>
-                </button>
-                <button class="robin-chat--vote robin-chat--vote-continue robin--vote-class--continue"
-                        value="CONTINUE">
-                    <span class="robin--icon"></span>
-                    <span class="robin-chat--vote-label">stay</span>
-                </button>
-                <button class="robin-chat--vote robin-chat--vote-increase robin--vote-class--increase"
-                        value="INCREASE">
-                    <span class="robin--icon"></span>
-                    <span class="robin-chat--vote-label">grow</span>
-                </button>
             </div>
-        </div>
 
-        <div id="robinQuitWidget" class="robin-chat--sidebar-widget robin-chat--quit-widget" hidden>
-            <div class="robin-chat--buttons">
-                <button class="robin-chat--quit">
-                    leave room
-                </button>
+            <div id="robinQuitWidget" class="robin-chat--sidebar-widget robin-chat--quit-widget" hidden>
+                <div class="robin-chat--buttons">
+                    <button class="robin-chat--quit">
+                        leave room
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <div id="robinDesktopNotifier" class="robin-chat--sidebar-widget robin-chat--notification-widget" hidden>
-            <label>${_("Allow desktop notifications")}</label>
-        </div>
+            <div id="robinDesktopNotifier" class="robin-chat--sidebar-widget robin-chat--notification-widget" hidden>
+                <label>${_("Allow desktop notifications")}</label>
+            </div>
 
-        <div id="robinUserList" class="robin-chat--sidebar-widget robin-chat--user-list-widget">
-        </div>
+            <div id="robinUserList" class="robin-chat--sidebar-widget robin-chat--user-list-widget">
+            </div>
 
-        <div class="robin-chat--sidebar-widget robin-chat--report">
-            <%
-              encoded_subject = quote("[robin #%s] Rule Violation - (enter subject)" % thing.room.name)
-              encoded_message = quote("(please describe your issue here)\n\n---\n\nRoom ID: %s" % thing.room._id)
-            %>
-            <a href="/message/compose?to=%2Fr%2Freddit.com&amp;subject=${encoded_subject}&amp;message=${encoded_message}" target="_blank">${_("report a rule violation")}</a>
+            <div class="robin-chat--sidebar-widget robin-chat--report">
+                <%
+                  encoded_subject = quote("[robin #%s] Rule Violation - (enter subject)" % thing.room.name)
+                  encoded_message = quote("(please describe your issue here)\n\n---\n\nRoom ID: %s" % thing.room._id)
+                %>
+                <a href="/message/compose?to=%2Fr%2Freddit.com&amp;subject=${encoded_subject}&amp;message=${encoded_message}" target="_blank">${_("report a rule violation")}</a>
+            </div>
         </div>
     </div>
 </div>
