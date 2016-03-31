@@ -135,9 +135,15 @@
 
     _onKeydown: function(e) {
       if (!this.collection) { return;}
-      
-      if (e.keyCode !== 9) {
+
+      var input = this.form.message;
+
+      if (e.keyCode !== 9 ||
+          !input.selectionEnd ||
+          input.selectionStart !== input.selectionEnd) {
         // keyCode 9 == tab key, ignore everything but tabs
+        // also ignore if selecting text, cursor is at beginning of input, or
+        // the selectionStart/End properties don't exist
         this._autoCompleting = false;
         return;
       }
@@ -148,8 +154,9 @@
         this._nextAutoComplete();
         return;
       }
-        
-      var messageText = this.form.message.value;
+      
+      var cursorPosition = input.selectionEnd;
+      var messageText = input.value.slice(0, cursorPosition);
       if (!messageText) { return; }
 
       var match = messageText.match(this.LAST_WORD_REGEX);
@@ -176,10 +183,16 @@
     },
 
     _nextAutoComplete: function() {
-      var messageText = this.form.message.value;
+      var input = this.form.message;
+      var messageText = input.value;
+      var cursorPosition = input.selectionEnd;
+      var messageHead = messageText.slice(0, cursorPosition);
+      var messageTail = messageText.slice(cursorPosition);
       var suggestedWord = this._autoCompleteValues[this._autoCompleteIndex];
-      var replacedText = messageText.replace(this.LAST_WORD_REGEX, suggestedWord);
-      this.form.message.value = replacedText;
+      var replacedText = messageHead.replace(this.LAST_WORD_REGEX, suggestedWord);
+      var cursorPosition = replacedText.length;
+      input.value = replacedText + messageTail;
+      input.setSelectionRange(cursorPosition, cursorPosition);
       this.counter.update(replacedText);
       this._autoCompleteIndex = (this._autoCompleteIndex + 1) % this._autoCompleteValues.length;
     },
