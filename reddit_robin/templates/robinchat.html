@@ -13,8 +13,12 @@
 
         <div id="robinChatInput" class="robin-chat--input">
             <form id="robinSendMessage" action="/api/robin/${thing.room._id}/message" method="POST">
+                <div class="text-counter">
+                    <span class="text-counter-display"></span>&#32;
+                    ${_("remaining")}
+                </div>
                 <input type="text"
-                        class="c-form-control"
+                        class="c-form-control text-counter-input"
                         name="message"
                         autocomplete="off"
                         maxlength="140"
