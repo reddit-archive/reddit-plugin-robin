@@ -86,7 +86,7 @@
       },
 
       'message:no_match': function(message) {
-        this.addSystemAction('no compatible room found for matching, we will count votes and check for a match in 1 minute.');
+        this.addSystemAction('no compatible room found for matching, we will count votes and check again for a match in 1 minute.');
       },
 
       'message:updated_name': function(message) {
