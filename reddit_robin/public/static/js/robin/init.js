@@ -277,7 +277,7 @@
           var presence = user.get('present') ? 'present' : 'away';
 
           if (user.hasVoted()) {
-            this.addSystemMessage('%(userName)s is %(presence)s and hast voted to %(vote)s'.format({
+            this.addSystemMessage('%(userName)s is %(presence)s and has voted to %(vote)s'.format({
               userName: userName,
               presence: presence,
               vote: user.get('vote'),
