@@ -20,24 +20,19 @@ from .subreddit_maker import queue_subreddit_creation
 # every minute.  This should guarantee a warning at least 1 minute before
 # each room is reaped.  This could still be a problem if the overall loop time
 # is bigger than a minute.
-VOTING_PROMPT_TIME = timedelta(minutes=1)
+VOTING_PROMPT_TIME = timedelta(minutes=2)
 
 # How long each room will last at each level before merging happens.
-DEFAULT_LEVEL_TIME = timedelta(minutes=4)
+DEFAULT_LEVEL_TIME = timedelta(minutes=32)
 LEVEL_TIMINGS = defaultdict(lambda: DEFAULT_LEVEL_TIME)
 LEVEL_TIMINGS.update({
     0: timedelta(minutes=2),
+    1: timedelta(minutes=4),
+    2: timedelta(minutes=8),
+    3: timedelta(minutes=16),
+    # >=4: timedelta(minutes=DEFAULT_LEVEL_TIME),
 })
 
-
-"""
-reaping happens every 15 minutes
-5 minutes before the reaping we will prompt each room to vote
-
-doing it on a fixed schedule like this will put all rooms in sync rather than
-having them age in reference from their creation date. this simplifies the merging.
-
-"""
 
 def _prompt_for_voting():
     now = datetime.now(g.tz)
