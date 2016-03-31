@@ -8,7 +8,7 @@ from .models import RobinRoom
 
 
 def send_sr_message(subreddit, recipient):
-    subject = 'Continue the conversation in /r/%s' % subreddit.name
+    subject = 'Thank you for participating in Robin'
     body = 'Continue the conversation in /r/{sr_name}.'.format(
         sr_name=subreddit.name,
     )
