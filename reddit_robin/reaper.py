@@ -167,7 +167,8 @@ def remove_abandoners(room, users):
 def continue_room(room):
     print "continuing %s" % room
     room.continu()
-    queue_subreddit_creation(room)
+    if len(room.get_all_participants()) > 1:
+        queue_subreddit_creation(room)
 
 
 def abandon_room(room):
