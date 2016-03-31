@@ -13,6 +13,8 @@
   var DEFAULT_FLAIR_CLASS = 'no-flair';
   var NUM_FLAIR_CLASSES = 6;
 
+  var ROBIN_MESSAGE_MAX_LENGTH = 140;
+
   function OneOf(attrName, values) {
     return function(model) {
       var value = model.get(attrName);
@@ -53,10 +55,8 @@
 
 
   var RobinMessage = _RobinModel.extend({
-    MAX_LENGTH: 140,
-
     validators: [
-      r.models.validators.StringLength('message', 1, this.MAX_LENGTH),
+      r.models.validators.StringLength('message', 1, ROBIN_MESSAGE_MAX_LENGTH),
       OneOf('messageClass', MESSAGE_CLASSES),
       OneOf('userClass', USER_CLASSES),
     ],
@@ -215,6 +215,7 @@
 
 
   r.robin.VOTE_TYPES = VOTE_TYPES;
+  r.robin.ROBIN_MESSAGE_MAX_LENGTH = ROBIN_MESSAGE_MAX_LENGTH;
   r.robin.models = {
     RobinUser: RobinUser,
     RobinMessage: RobinMessage,

@@ -110,6 +110,10 @@
 
     initialize: function() {
       this.form = $('#robinSendMessage')[0];
+      this.counter = new r.ui.TextCounter({
+        el: this.el,
+        maxLength: r.robin.ROBIN_MESSAGE_MAX_LENGTH,
+      });
     },
 
     _onMessage: function(e) {
