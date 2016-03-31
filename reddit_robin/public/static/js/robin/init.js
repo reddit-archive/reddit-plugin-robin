@@ -117,6 +117,7 @@
       },
 
       'change:room_name': function(model, value) {
+        this.addSystemAction('found a match');
         this.$el.find('.robin-chat--room-name').text(value);
       },
 
@@ -431,6 +432,13 @@
 
       // Welcome message
       this.addSystemMessage('Welcome to robin.  Please type /help or /commands for more information.');
+
+      if (participants.length === 1) {
+        this.addSystemMessage('Please wait to be matched.');
+        this.listenToOnce(this.roomParticipants, 'add', function(user, userList) {
+          this.addUserAction(user.get('name'), 'joined the room');
+        });
+      }
 
       // display the reap time
       if (!this.options.is_continued) {
