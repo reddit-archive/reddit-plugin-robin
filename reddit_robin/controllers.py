@@ -252,6 +252,14 @@ class RobinController(RedditController):
             },
         )
 
+        events.vote(
+            room=room,
+            vote=vote,
+            sent_dt=datetime.datetime.utcnow(),
+            context=c,
+            request=request,
+        )
+
     @validatedForm(
         VUser(),
         VNotInTimeout(),
