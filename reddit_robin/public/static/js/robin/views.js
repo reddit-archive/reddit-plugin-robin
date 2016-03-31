@@ -104,8 +104,14 @@
 
 
   var RobinChatInput = Backbone.View.extend({
+    LAST_WORD_REGEX: /[^\s]+$/,
+    _autoCompleting: false,
+    _autoCompleteIndex: 0,
+    _autoCompleteValues: null,
+
     events: {
       'submit #robinSendMessage': '_onMessage',
+      'keydown input[type=text]': '_onKeydown',
     },
 
     initialize: function() {
@@ -129,6 +135,70 @@
           this.trigger('chat:command', commandArgs[0], commandArgs.slice(1));
         }
       }
+    },
+
+    _onKeydown: function(e) {
+      if (!this.collection) { return;}
+
+      var input = this.form.message;
+
+      if (e.keyCode !== 9 ||
+          !input.selectionEnd ||
+          input.selectionStart !== input.selectionEnd) {
+        // keyCode 9 == tab key, ignore everything but tabs
+        // also ignore if selecting text, cursor is at beginning of input, or
+        // the selectionStart/End properties don't exist
+        this._autoCompleting = false;
+        return;
+      }
+
+      if (this._autoCompleting) {
+        // cycle to the next match
+        e.preventDefault();
+        this._nextAutoComplete();
+        return;
+      }
+      
+      var cursorPosition = input.selectionEnd;
+      var messageText = input.value.slice(0, cursorPosition);
+      if (!messageText) { return; }
+
+      var match = messageText.match(this.LAST_WORD_REGEX);
+      if (!match) { return; }
+
+      e.preventDefault();
+      this._startAutoComplete(match[0]);
+   },
+
+   _startAutoComplete: function(term) {
+      var regExp = new RegExp('^' + term);
+      var modelMatches = this.collection.filter(function(model) {
+        return regExp.test(model.get('name'));
+      });
+
+      if (!modelMatches.length) { return; }
+
+      this._autoCompleting = true;
+      this._autoCompleteIndex = 0;
+      this._autoCompleteValues = modelMatches.map(function(model) {
+        return model.get('name');
+      });
+      this._nextAutoComplete();
+    },
+
+    _nextAutoComplete: function() {
+      var input = this.form.message;
+      var messageText = input.value;
+      var cursorPosition = input.selectionEnd;
+      var messageHead = messageText.slice(0, cursorPosition);
+      var messageTail = messageText.slice(cursorPosition);
+      var suggestedWord = this._autoCompleteValues[this._autoCompleteIndex];
+      var replacedText = messageHead.replace(this.LAST_WORD_REGEX, suggestedWord);
+      var cursorPosition = replacedText.length;
+      input.value = replacedText + messageTail;
+      input.setSelectionRange(cursorPosition, cursorPosition);
+      this.counter.update(replacedText);
+      this._autoCompleteIndex = (this._autoCompleteIndex + 1) % this._autoCompleteValues.length;
     },
 
     disable: function() {
