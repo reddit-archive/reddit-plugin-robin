@@ -159,8 +159,8 @@ class RobinController(RedditController):
         # for 2.
         desired_avg_per_sec = 1
         by_level = g.live_config.get("robin_ratelimit_avg_per_sec", {})
-        for level, avg_per_sec in sorted(by_level.items(), key=lambda (x,y): x):
-            if level > room.level:
+        for level, avg_per_sec in sorted(by_level.items(), key=lambda (x,y): int(x)):
+            if int(level) > room.level:
                 break
             desired_avg_per_sec = avg_per_sec
 
