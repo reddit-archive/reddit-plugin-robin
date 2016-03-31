@@ -180,6 +180,7 @@
       var suggestedWord = this._autoCompleteValues[this._autoCompleteIndex];
       var replacedText = messageText.replace(this.LAST_WORD_REGEX, suggestedWord);
       this.form.message.value = replacedText;
+      this.counter.update(replacedText);
       this._autoCompleteIndex = (this._autoCompleteIndex + 1) % this._autoCompleteValues.length;
     },
 
