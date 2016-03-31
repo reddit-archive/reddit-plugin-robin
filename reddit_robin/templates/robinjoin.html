@@ -1,5 +1,7 @@
 <% from r2.lib import js %>
 
+<%namespace file="utils.html" import="md"/>
+
 <div class="robin-home">
     % if thing.robin_heavy_load: 
         <div id="heavyLoadRobinContainer"
@@ -14,6 +16,9 @@
             </button>
         </div>
     % endif 
+    <div class="robin-home--notice">
+        ${md("Robin will run until 2016-04-08.  Find out more at r/joinrobin.")}
+    </div>
 </div>
 
 ${unsafe(js.use("robin-join"))}
