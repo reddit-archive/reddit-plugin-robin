@@ -212,6 +212,7 @@
     clear: function() {
       this.enable();
       this.form.message.value = '';
+      this.counter.update('');
     },
   });
 
