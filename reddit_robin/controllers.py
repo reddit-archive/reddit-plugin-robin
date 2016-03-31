@@ -280,6 +280,13 @@ class RobinController(RedditController):
         if not room:
             return
         room.remove_participants([c.user])
+        websockets.send_broadcast(
+            namespace="/robin/" + room.id,
+            type="users_abandoned",
+            payload={
+                "users": [c.user.name],
+            },
+        )
 
     @json_validate(
         VUser(),
