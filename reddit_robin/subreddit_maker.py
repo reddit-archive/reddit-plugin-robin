@@ -28,6 +28,7 @@ def run_subreddit_maker():
         print 'got %s from room.create_sr()' % subreddit
 
         if subreddit:
+            g.stats.simple_event("robin.subreddit.created")
             participant_ids = room.get_all_participants()
             participants = [
                 Account._byID(participant_id)
@@ -40,6 +41,10 @@ def run_subreddit_maker():
                 subreddit.add_moderator(moderator)
 
             print 'adding contributors to %s' % subreddit
+            g.stats.simple_event(
+                "robin.subreddit.contributors_added",
+                delta=len(participants),
+            )
             for participant in participants:
                 # To be replaced with UserRel hacking?
                 subreddit.add_contributor(participant)
@@ -55,6 +60,7 @@ def run_subreddit_maker():
                 payload=payload,
             )
         else:
+            g.stats.simple_event("robin.subreddit.creation_failed")
             print 'subreddit creation failed for room %s' % room.id
 
     amqp.consume_items('robin_subreddit_maker_q', process_subreddit_maker)
