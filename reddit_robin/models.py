@@ -228,7 +228,8 @@ def move_dead_rooms():
     for _id, columns in RobinRoom._cf.get_range():
         room = RobinRoom._from_serialized_columns(_id, columns)
         room_is_dead = not room.is_alive
-        room_is_empty = room.is_continued and room.get_all_participants() <= 1
+        num_active_participants = len(room.get_all_participants())
+        room_is_empty = room.is_continued and num_active_participants <= 1
 
         if room_is_dead or room_is_empty:
             RobinRoomDead._cf.insert(_id, columns)
