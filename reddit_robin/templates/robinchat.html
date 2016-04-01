@@ -71,7 +71,9 @@
                   encoded_subject = quote("[robin #%s%s] Rule Violation - (enter subject)" % (thing.room.name[:20], '...' if len(thing.room.name) > 20 else ''))
                   encoded_message = quote("(please describe your issue here)\n\n---\n\nRoom ID: %s" % thing.room._id)
                 %>
-                <a href="/message/compose?to=%2Fr%2Freddit.com&amp;subject=${encoded_subject}&amp;message=${encoded_message}" target="_blank">${_("report a rule violation")}</a>
+                <a href="/help/contentpolicy" target="_blank">${_('content policy')}</a>
+                &nbsp;&bull;&nbsp;
+                <a href="/message/compose?to=%2Fr%2Freddit.com&amp;subject=${encoded_subject}&amp;message=${encoded_message}" target="_blank">${_("report a content policy violation")}</a>
             </div>
         </div>
     </div>
