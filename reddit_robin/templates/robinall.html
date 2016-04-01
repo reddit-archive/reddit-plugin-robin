@@ -1,17 +1,17 @@
-<h1>robin (${len(thing.participants_by_room)} rooms)</h1>
+<h1>robin (${len(thing.rooms)} rooms)</h1>
 
 <ul>
-  %for room_id, participants in thing.participants_by_room.iteritems():
+  %for room in sorted(thing.rooms, key=lambda room: (room.level, len(room.participants)), reverse=True):
     <li>
       <%
-        if len(participants) > 32:
-          name_str = ', '.join(user.name for user in participants[:32])
+        if len(room.participants) > 32:
+          name_str = ', '.join(user.name for user in room.participants[:32])
           name_str += ', ...'
-          name_str += ' (%s total)' % len(participants)
+          name_str += ' (%s total)' % len(room.participants)
         else:
-          name_str = ', '.join(user.name for user in participants)
+          name_str = ', '.join(user.name for user in room.participants)
       %>
-      <a href="/robin/${room_id}">${room_id}</a>: ${name_str}
+      <a href="/robin/${room.id}">${room.id}</a> (L${room.level}/U${len(room.participants)}): ${name_str}
     </li>
   %endfor
 </ul>
