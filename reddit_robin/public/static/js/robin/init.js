@@ -106,8 +106,13 @@
         this.chatInput.clear();
       },
 
-      'invalid:message error:message': function() {
-        this.addSystemMessage('could not send your message, you may be posting too often');
+      'invalid:message error:message': function(room, errors) {
+        try {
+          this.addSystemMessage(errors[0].message);
+        } catch (err) {
+          this.addSystemMessage('could not send your message');
+        }
+        // drop their message into the chat so it's not lost
         this.addSystemMessage(this.lastMessageText);
         this.lastMessageText = null;
       },
