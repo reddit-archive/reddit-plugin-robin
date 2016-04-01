@@ -280,7 +280,7 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
     def get_all_participant_ids(cls, room):
         rowkey = cls._rowkey(room)
         try:
-            columns = cls._cf.get(rowkey)
+            columns = dict(cls._cf.xget(rowkey))
         except tdb_cassandra.NotFoundException:
             return set()
 
@@ -306,7 +306,7 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
     def get_all_votes(cls, room):
         rowkey = cls._rowkey(room)
         try:
-            columns = cls._cf.get(rowkey)
+            columns = dict(cls._cf.xget(rowkey))
         except tdb_cassandra.NotFoundException:
             return {}
 
