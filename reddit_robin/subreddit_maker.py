@@ -1,10 +1,11 @@
 from pylons import app_globals as g
 
 from r2.lib import amqp, websockets
+from r2.lib.db import tdb_cassandra
 from r2.models import Account
 from r2.models.admintools import send_system_message
 
-from .models import RobinRoom
+from .models import RobinRoom, RobinRoomDead
 
 
 def send_sr_message(subreddit, recipient):
@@ -21,7 +22,13 @@ def run_subreddit_maker():
     @g.stats.amqp_processor('robin_subreddit_maker_q')
     def process_subreddit_maker(msg):
         room_id = msg.body
-        room = RobinRoom._byID(room_id)
+        try:
+            room = RobinRoom._byID(room_id)
+        except tdb_cassandra.NotFound:
+            try:
+                room = RobinRoomDead._byID(room_id)
+            except tdb_cassandra.NotFound:
+                print "can't find room %s, giving up" % room_id
         print 'creating sr for room %s' % room
 
         subreddit = room.create_sr()
