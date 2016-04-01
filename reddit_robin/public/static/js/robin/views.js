@@ -20,7 +20,8 @@
       var date = new Date();
       var time = date.toLocaleTimeString ? date.toLocaleTimeString() : date.toTimeString();      
       var scrollOffset = (this.$el.prop('scrollHeight') - this.$el.scrollTop());
-      var wasScrolledDown = (scrollOffset === this.$el.height());
+      var scrollDelta = scrollOffset - this.$el.height();
+      var wasScrolledDown = (Math.abs(scrollDelta) < 5);
 
       var templateData = _.extend(message.toJSON(), {
         isoDate: date.toISOString(),
