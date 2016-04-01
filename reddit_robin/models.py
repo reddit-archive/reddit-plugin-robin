@@ -141,7 +141,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
                 continue
             except ValueError:
                 print 'bad subreddit name, giving up: %s' % name
-                break
+                return subreddit
         else:
             print "gave up attempting to create sr for %s" % self.name
             return subreddit
