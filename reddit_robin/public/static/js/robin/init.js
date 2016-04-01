@@ -320,6 +320,40 @@
       'clear': function() {
         this.chatWindow.startJuicyPoppin();
       },
+
+      'count': function() {
+        this.addSystemMessage('There are ' + this.roomParticipants.length + ' participants in the room.');
+      },
+
+      'tally': function() {
+        var votes = {
+          ABANDON: 0,
+          CONTINUE: 0,
+          INCREASE: 0,
+          NOVOTE: 0,
+        };
+
+        this.roomParticipants.forEach(function(user) {
+          var vote = user.get('vote');
+          votes[vote] += 1;
+        });
+
+        this.addSystemMessage('Total votes : %(total)s'.format({
+          total: votes.ABANDON + votes.CONTINUE + votes.INCREASE,
+        }));
+        this.addSystemMessage('%(action)s : %(num)s'.format({
+          num: votes.ABANDON,
+          action: this.getLabelFromVote('ABANDON'),
+        }));
+        this.addSystemMessage('%(action)s : %(num)s'.format({
+          num: votes.CONTINUE,
+          action: this.getLabelFromVote('CONTINUE')
+        }));
+        this.addSystemMessage('%(action)s : %(num)s'.format({
+          num: votes.INCREASE,
+          action: this.getLabelFromVote('INCREASE')
+        }));
+      },
     },
 
     initialize: function(options) {
