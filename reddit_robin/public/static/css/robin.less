@@ -308,18 +308,22 @@ body {
     .robin-chat--body {
         .display-flex();
         .flex-direction(row);
+        height: 500px;
+        height: 65vh;
     }
 
     .robin-chat--main {
         .flex(1 1);
         // fixes flex layout in Safari :(
         border-right: 1px solid transparent;
+        .display-flex();
+        .flex-direction(column);
     }
 
     .robin-chat--window {
-        height: @robin-chat--window-height;
         overflow-x: hidden;
         overflow-y: scroll;
+        .flex(1 1 auto);
     }
 
     .robin-chat--message-list {
@@ -335,6 +339,8 @@ body {
     .robin-chat--sidebar {
         background-color: @robin-chat--color-sidebar;
         .flex(0 0 @robin-chat--sidebar-width);
+        .display-flex();
+        .flex-direction(column);
     }
 
     .robin-chat--sidebar-widget {
@@ -432,6 +438,8 @@ body {
     }
 
     .robin-chat--user-list-widget {
+        overflow: scroll;
+
         .robin-room-participant {
             margin-bottom: 5px;
         }
