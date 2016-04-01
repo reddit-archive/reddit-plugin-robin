@@ -114,7 +114,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
 
     def _generate_sr_name(self):
         tries = 0
-        generated_name = self.name[:20].replace('-', '_')
+        generated_name = self.name.replace('-', '')[:20]
 
         while tries < 20:
             print 'generated %s for sr name candidate' % generated_name
@@ -139,6 +139,9 @@ class RobinRoom(tdb_cassandra.UuidThing):
             except SubredditExists:
                 print 'subreddit %s already exists' % name
                 continue
+            except ValueError:
+                print 'bad subreddit name, giving up: %s' % name
+                break
         else:
             print "gave up attempting to create sr for %s" % self.name
             return subreddit
