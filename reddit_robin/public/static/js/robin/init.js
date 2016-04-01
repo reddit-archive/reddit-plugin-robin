@@ -107,7 +107,7 @@
       },
 
       'invalid:message error:message': function() {
-        this.addSystemMessage('could not send your message:');
+        this.addSystemMessage('could not send your message, you may be posting too often');
         this.addSystemMessage(this.lastMessageText);
         this.lastMessageText = null;
       },
