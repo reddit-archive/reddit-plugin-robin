@@ -459,7 +459,13 @@
     },
 
     transitionRefresh: function() {
-      var timeout = 1000 + Math.floor(Math.random() * 4000);
+      var timeoutMult = 1;
+      if (this.roomParticipants.length > 1000) {
+        timeoutMult = 3;
+      } else if (this.roomParticipants.length > 100) {
+        timeoutMult = 2;
+      }
+      var timeout = 1000 + (Math.floor(Math.random() * 4000) * timeoutMult);
       this.chatWindow.startJuicyPoppin();
       setTimeout(function() {
         $.refresh();
