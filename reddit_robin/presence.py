@@ -23,7 +23,7 @@ def run():
         room_namespace = posixpath.dirname(namespace)
         room_id = posixpath.basename(room_namespace)
 
-        account = Account._byID36(user_id36, data=True)
+        account = Account._byID36(user_id36, data=True, stale=True)
         try:
             room = RobinRoom._byID(room_id)
         except tdb_cassandra.NotFoundException:

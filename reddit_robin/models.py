@@ -76,7 +76,8 @@ class RobinRoom(tdb_cassandra.UuidThing):
             return self._name
 
         user_ids = self.get_all_participants()
-        users = Account._byID(user_ids, data=True, return_dict=False)
+        users = Account._byID(user_ids, data=True, return_dict=False,
+                              stale=True)
         user_names = [user.name for user in users]
         self._name = self.make_room_name(user_names)
         return self._name

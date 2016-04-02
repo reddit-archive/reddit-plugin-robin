@@ -25,7 +25,7 @@ def run_waitinglist():
     @g.stats.amqp_processor("robin_waitinglist_q")
     def process_waitinglist(msg):
         user_id36 = msg.body
-        user = Account._byID36(user_id36, data=True)
+        user = Account._byID36(user_id36, data=True, stale=True)
         if RobinRoom.get_room_for_user(user):
             print "%s already in room" % user.name
             return
