@@ -50,6 +50,7 @@ def run_waitinglist():
 
             if current_room_id:
                 g.cache.delete("current_robin_room")
+                current_room.persist_computed_name()
                 websockets.send_broadcast(
                     namespace="/robin/" + current_room.id,
                     type="updated_name",

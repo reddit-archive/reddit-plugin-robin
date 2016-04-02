@@ -69,6 +69,9 @@ class RobinRoom(tdb_cassandra.UuidThing):
 
     @property
     def name(self):
+        if hasattr(self, "computed_name"):
+            return self.computed_name
+
         if hasattr(self, "_name"):
             return self._name
 
@@ -77,6 +80,11 @@ class RobinRoom(tdb_cassandra.UuidThing):
         user_names = [user.name for user in users]
         self._name = self.make_room_name(user_names)
         return self._name
+
+    def persist_computed_name(self):
+        """Save the room name to C*"""
+        self.computed_name = self.name
+        self._commit()
 
     def add_participants(self, users):
         ParticipantVoteByRoom.add_participants(self, users)
@@ -161,6 +169,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
 
         new_room = cls.create(level=new_room_level)
         new_room.add_participants(all_participants)
+        new_room.persist_computed_name()
 
         for room in (room1, room2):
             room.last_reap_time = datetime.now(g.tz)
