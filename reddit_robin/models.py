@@ -127,7 +127,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
 
         while tries < 20:
             print 'generated %s for sr name candidate' % generated_name
-            yield generated_name
+            yield str(generated_name)
             generated_name = '%s%s' % (generated_name[:18], tries)
             tries += 1
 
