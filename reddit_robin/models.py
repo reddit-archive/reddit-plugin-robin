@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import math
 
 from pylons import app_globals as g
@@ -235,16 +235,28 @@ def move_dead_rooms():
 
     count = 0
     start = datetime.now(g.tz)
+    cutoff = datetime.now(g.tz) - timedelta(days=2)
     for _id, columns in RobinRoom._cf.get_range():
         room = RobinRoom._from_serialized_columns(_id, columns)
         room_is_dead = not room.is_alive
-        num_active_participants = len(room.get_all_participants())
-        room_is_lonely = room.is_continued and num_active_participants <= 1
 
-        if room_is_dead or room_is_lonely:
+        if room.is_continued:
+            num_active_participants = len(room.get_all_participants())
+            room_is_lonely = num_active_participants <= 1
+        else:
+            room_is_lonely = False
+
+        if room.is_continued and room.date <= cutoff:
+            num_present_participants = len(room.get_present_participants())
+            room_is_old_and_lonely = num_present_participants <= 1
+        else:
+            room_is_old_and_lonely = False
+
+        if room_is_dead or room_is_lonely or room_is_old_and_lonely:
             RobinRoomDead._cf.insert(_id, columns)
             RobinRoom._cf.remove(_id)
             count += 1
+
     g.stats.simple_event('robin.room.move_dead', count)
     g.stats.flush()
     print "moved %s rooms in %s" % (count, datetime.now(g.tz) - start)
