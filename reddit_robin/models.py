@@ -123,7 +123,7 @@ class RobinRoom(tdb_cassandra.UuidThing):
 
     def _generate_sr_name(self):
         tries = 0
-        generated_name = self.name.replace('-', '')[:20]
+        generated_name = self.name.replace('-', '').replace('_', '')[:20]
 
         while tries < 20:
             print 'generated %s for sr name candidate' % generated_name
