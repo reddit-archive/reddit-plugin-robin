@@ -7,7 +7,8 @@ from r2.lib import amqp, websockets
 from r2.lib.db import tdb_cassandra
 from r2.models import Account
 
-from .models import ParticipantPresenceByRoom, RobinRoom
+from .models import UserPresenceByRoom, RobinRoom
+
 
 def run():
     @g.stats.amqp_processor("robin_presence_q")
@@ -23,13 +24,10 @@ def run():
         room_namespace = posixpath.dirname(namespace)
         room_id = posixpath.basename(room_namespace)
 
-        account = Account._byID36(user_id36, data=True, stale=True)
+        account = Account._byID36(user_id36, stale=True)
         try:
             room = RobinRoom._byID(room_id)
         except tdb_cassandra.NotFoundException:
-            return
-
-        if not room.is_participant(account):
             return
 
         presence_type = "join" if message_type == "websocket.connect" else "part"
@@ -43,9 +41,9 @@ def run():
         )
 
         if presence_type == "join":
-            ParticipantPresenceByRoom.mark_joined(room, account)
+            UserPresenceByRoom.mark_joined(room, account)
         else:
-            ParticipantPresenceByRoom.mark_exited(room, account)
+            UserPresenceByRoom.mark_exited(room, account)
 
 
     amqp.consume_items(

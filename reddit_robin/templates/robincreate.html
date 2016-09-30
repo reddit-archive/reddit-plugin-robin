@@ -1,0 +1,8 @@
+<div class="robin-home">
+    <div id="createRoomContainer">
+        <form onsubmit="return post_form(this, 'robin/${thing.room_id}/create');">
+          <input type="hidden" name="room_id" value="${thing.room_id}"/>
+          <button type="submit">create ${thing.room_id}</button>
+        </form>
+    </div>
+</div>

@@ -1,12 +1,5 @@
-from collections import namedtuple
-
-from pylons import tmpl_context as c
-
 from r2.lib.pages import Reddit
 from r2.lib.wrapped import Templated
-from r2.models import Account
-
-from reddit_robin.models import RobinRoom
 
 
 class RobinPage(Reddit):
@@ -29,30 +22,10 @@ class RobinChatPage(RobinPage):
     pass
 
 
-class RobinJoin(Templated):
-    pass
-
-
-RoomDetails = namedtuple("RoomDetails", ["id", "participants", "level"])
-
-class RobinAll(Templated):
-    def __init__(self):
-        all_rooms = list(RobinRoom.generate_voting_rooms())
-        self.rooms = []
-        for room in all_rooms:
-            participant_ids = room.get_all_participants()
-            participants = Account._byID(
-                participant_ids, data=True, return_dict=False)
-            self.rooms.append(RoomDetails(
-                id=room.id,
-                participants=participants,
-                level=room.level,
-            ))
+class RobinCreate(Templated):
+    def __init__(self, room_id):
+        self.room_id = room_id
         Templated.__init__(self)
-
-
-class RobinAdmin(Templated):
-    pass
 
 
 class RobinChat(Templated):
