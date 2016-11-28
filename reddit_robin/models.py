@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import math
 
+from pycassa.system_manager import TIME_UUID_TYPE
 from pylons import app_globals as g
 
 from r2.lib.db import tdb_cassandra
@@ -276,7 +277,7 @@ class ParticipantVoteByRoom(tdb_cassandra.View):
     _connection_pool = 'main'
     _fetch_all_columns = True
     _extra_schema_creation_args = dict(
-        key_validation_class=tdb_cassandra.TIME_UUID_TYPE,
+        key_validation_class=TIME_UUID_TYPE,
     )
 
     _read_consistency_level = tdb_cassandra.CL.QUORUM
@@ -350,7 +351,7 @@ class ParticipantPresenceByRoom(tdb_cassandra.View):
     _connection_pool = 'main'
     _fetch_all_columns = True
     _extra_schema_creation_args = dict(
-        key_validation_class=tdb_cassandra.TIME_UUID_TYPE,
+        key_validation_class=TIME_UUID_TYPE,
     )
 
     _read_consistency_level = tdb_cassandra.CL.QUORUM
@@ -386,7 +387,7 @@ class RoomsByParticipant(tdb_cassandra.View):
     _use_db = True
     _connection_pool = 'main'
 
-    _compare_with = tdb_cassandra.TIME_UUID_TYPE
+    _compare_with = TIME_UUID_TYPE
     _read_consistency_level = tdb_cassandra.CL.QUORUM
     _write_consistency_level = tdb_cassandra.CL.QUORUM
 
