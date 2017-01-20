@@ -108,7 +108,7 @@
 
       'invalid:message error:message': function(room, errors) {
         try {
-          this.addSystemMessage(errors[0].message);
+          this.addSystemMessage(errors[0].displayMessage);
         } catch (err) {
           this.addSystemMessage('could not send your message');
         }
